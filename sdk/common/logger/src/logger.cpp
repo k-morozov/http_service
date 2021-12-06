@@ -7,6 +7,7 @@
 
 #include "LoggerImpl.h"
 
+
 //auto init()
 //{
 //    logging::add_file_log(
