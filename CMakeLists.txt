@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.21)
+project(analytics)
+
+set(CMAKE_CXX_STANDARD 20)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+set(CONAN_DISABLE_CHECK_COMPILER True)
+conan_basic_setup()
+
+
+include_directories(sdk)
+
+add_subdirectory(sdk)
+add_subdirectory(app)
