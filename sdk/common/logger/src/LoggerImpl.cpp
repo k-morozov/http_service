@@ -45,8 +45,6 @@ namespace detail {
     BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
 }
 
-
-
 LoggerImpl::LoggerImpl(std::string const& channel_name) :
     Base(keywords::severity=boost::log::trivial::severity_level::info,
         keywords::channel=channel_name)
@@ -54,9 +52,9 @@ LoggerImpl::LoggerImpl(std::string const& channel_name) :
     add_attribute("Tag", attrs::constant<std::string>("tag_test"));
 }
 
-void LoggerImpl::info(std::string const& text)
+void LoggerImpl::write(sdk::Severity level, std::string const& text)
 {
-    BOOST_LOG(*this) << text;
+    BOOST_LOG_SEV(*this, Utils::convert(level)) << text;
 }
 
 void LoggerImpl::init()

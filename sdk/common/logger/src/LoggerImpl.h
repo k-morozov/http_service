@@ -6,7 +6,8 @@
 #define ANALYTICS_LOGGERIMPL_H
 
 #include <boost/log/sources/severity_channel_logger.hpp>
-
+#include "Severity.h"
+#include "Utils.h"
 
 class LoggerImpl : public boost::log::sources::severity_channel_logger< boost::log::trivial::severity_level >
 {
@@ -15,7 +16,7 @@ public:
 
     LoggerImpl(std::string const& channel_name);
 
-    void info(std::string const& text);
+    void write(sdk::Severity level, std::string const& text);
 
     void init();
 

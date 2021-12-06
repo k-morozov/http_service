@@ -18,11 +18,12 @@ public:
     explicit Logger(sdk::Severity level);
     ~Logger();
 
-//    Logger(std::string const& tag);
-
     void info(std::string const& message);
 
 private:
     std::unique_ptr<LoggerImpl> lg_;
+
+private:
+    void write(sdk::Severity level, std::string const& message);
 };
 #endif //ANALYTICS_LOGGER_H

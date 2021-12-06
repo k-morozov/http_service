@@ -8,48 +8,6 @@
 #include "LoggerImpl.h"
 
 
-//auto init()
-//{
-//    logging::add_file_log(
-//            keywords::rotation_size = 10 * 1024 * 1024,
-//            keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0)
-//    );
-//
-//    logging::formatter fmt = expr::stream
-//            << expr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S ")
-//            << "<" << severity << "> "
-//            << expr::if_(expr::has_attr(channel))
-//            [
-//                    expr::stream << "(" << channel << ") "
-//            ]
-//            << expr::if_(expr::has_attr(tag_attr))
-//            [
-//                    expr::stream << "[" << tag_attr << "] "
-//            ]
-//            << expr::smessage;
-//
-//    //! create thread for async run
-//    using text_sink =  sinks::asynchronous_sink< sinks::text_ostream_backend >;
-//    auto sink = boost::make_shared<text_sink>();
-//    sink->locked_backend()->add_stream(
-//            boost::shared_ptr<std::ostream>(&std::cout, boost::null_deleter{})
-//    );
-//    sink->locked_backend()->add_stream(
-//            boost::make_shared<std::ofstream>("sample.log")
-//    );
-//    sink->set_formatter(fmt);
-//    logging::core::get()->add_sink(sink);
-//
-//
-//    logging::add_common_attributes();
-//
-//    logging::core::get()->set_filter(
-//            logging::trivial::severity >= logging::trivial::info
-//            );
-//
-//    return sink;
-//}
-//
 //void logging_function()
 //{
 //    src::severity_channel_logger< boost::log::trivial::severity_level > slg(
@@ -101,8 +59,12 @@ Logger::Logger(sdk::Severity)
 
 Logger::~Logger() = default;
 
+void Logger::write(sdk::Severity level, std::string const& message)
+{
+    lg_->write(level, message);
+}
 
 void Logger::info(std::string const& message)
 {
-    lg_->info(message);
+    write(sdk::Severity::Info, message);
 }
