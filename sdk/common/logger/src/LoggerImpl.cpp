@@ -29,7 +29,6 @@
 #include <boost/log/attributes.hpp>
 #include <boost/log/utility/setup/file.hpp>
 
-
 namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
 namespace src = boost::log::sources;
@@ -37,19 +36,25 @@ namespace expr = boost::log::expressions;
 namespace attrs = boost::log::attributes;
 namespace keywords = boost::log::keywords;
 
+
 namespace detail {
     BOOST_LOG_ATTRIBUTE_KEYWORD(line_id, "LineID", unsigned int)
     BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", boost::log::trivial::severity_level)
-    BOOST_LOG_ATTRIBUTE_KEYWORD(timeline, "Timeline", attrs::timer::value_type)
+    BOOST_LOG_ATTRIBUTE_KEYWORD(timeline, "Timeline", boost::log::attributes::timer::value_type)
     BOOST_LOG_ATTRIBUTE_KEYWORD(channel, "Channel", std::string)
     BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
 }
 
-LoggerImpl::LoggerImpl(std::string const& channel_name) :
+LoggerImpl::LoggerImpl(std::string const& channel_name, std::string const& tag_name) :
     Base(keywords::severity=boost::log::trivial::severity_level::info,
         keywords::channel=channel_name)
 {
-    add_attribute("Tag", attrs::constant<std::string>("tag_test"));
+    add_attribute("Tag", attrs::constant<std::string>(tag_name));
+}
+
+LoggerImpl::~LoggerImpl()
+{
+    stop_logging(sink_);
 }
 
 void LoggerImpl::write(sdk::Severity level, std::string const& text)
@@ -77,11 +82,9 @@ void LoggerImpl::init()
             ]
             << expr::smessage;
 
-    //! create thread for async run
-    using text_sink =  sinks::asynchronous_sink< sinks::text_ostream_backend >;
     auto sink = boost::make_shared<text_sink>();
     sink->locked_backend()->add_stream(
-            boost::shared_ptr<std::ostream>(&std::cout, boost::null_deleter{})
+            shared_ptr<std::ostream>(&std::cout, boost::null_deleter{})
     );
     sink->locked_backend()->add_stream(
             boost::make_shared<std::ofstream>("sample.log")
@@ -96,5 +99,26 @@ void LoggerImpl::init()
             logging::trivial::severity >= logging::trivial::info
     );
 
-//    return sink;
+    sink_.swap(sink);
+
+    stop_logging(sink);
+}
+
+void LoggerImpl::stop_logging(boost::shared_ptr<asynchronous_sink<text_ostream_backend > >& sink)
+{
+    if (!sink)
+        return;
+
+    boost::shared_ptr< logging::core > core = logging::core::get();
+
+    // Remove the sink from the core, so that no records are passed to it
+    core->remove_sink(sink);
+
+    // Break the feeding loop
+    sink->stop();
+
+    // Flush all log records that may have left buffered
+    sink->flush();
+
+    sink.reset();
 }

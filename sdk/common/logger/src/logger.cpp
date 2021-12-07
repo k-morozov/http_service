@@ -8,50 +8,9 @@
 #include "LoggerImpl.h"
 
 
-//void logging_function()
-//{
-//    src::severity_channel_logger< boost::log::trivial::severity_level > slg(
-//            keywords::severity=boost::log::trivial::severity_level::info,
-//            keywords::channel="channel's name");
-//
-//    slg.add_attribute("Tag", attrs::constant<std::string>("tag_test"));
-//
-//    BOOST_LOG(slg) << "Normal level";
-//    BOOST_LOG_SEV(slg, boost::log::trivial::severity_level::info) << "A regular message";
-//    BOOST_LOG_SEV(slg, boost::log::trivial::severity_level::warning) << "Something bad is going on but I can handle it";
-//    BOOST_LOG_SEV(slg, boost::log::trivial::severity_level::fatal) << "Everything crumbles, shoot me now!";
-//
-//    BOOST_LOG_SEV(slg, boost::log::trivial::severity_level::trace) << "An important message";
-//}
-//
-//void stop_logging(boost::shared_ptr< sinks::asynchronous_sink< sinks::text_ostream_backend > >& sink)
-//{
-//    boost::shared_ptr< logging::core > core = logging::core::get();
-//
-//    // Remove the sink from the core, so that no records are passed to it
-//    core->remove_sink(sink);
-//
-//    // Break the feeding loop
-//    sink->stop();
-//
-//    // Flush all log records that may have left buffered
-//    sink->flush();
-//
-//    sink.reset();
-//}
-
-//void Logger::hello()
-//{
-//    auto sink = init();
-//    logging_function();
-//
-//    stop_logging(sink);
-//}
-
-
-Logger::Logger(sdk::Severity)
+Logger::Logger(std::string const& channel_name, std::string const& tag)
 {
-    lg_ = std::make_unique<LoggerImpl>("Channel's name");
+    lg_ = std::make_unique<LoggerImpl>(channel_name, tag);
     if (!lg_)
         throw std::bad_alloc();
     lg_->init();
@@ -64,7 +23,29 @@ void Logger::write(sdk::Severity level, std::string const& message)
     lg_->write(level, message);
 }
 
+void Logger::trace(const std::string &message) {
+    write(sdk::Severity::Trace, message);
+}
+
+void Logger::debug(std::string const& message)
+{
+    write(sdk::Severity::Debug, message);
+}
+
 void Logger::info(std::string const& message)
 {
     write(sdk::Severity::Info, message);
+}
+
+void Logger::warning(const std::string &message) {
+    write(sdk::Severity::Warning, message);
+}
+
+void Logger::error(std::string const& message)
+{
+    write(sdk::Severity::Error, message);
+}
+
+void Logger::fatal(const std::string &message) {
+    write(sdk::Severity::Fatal, message);
 }
