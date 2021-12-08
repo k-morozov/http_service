@@ -69,7 +69,20 @@ public:
     using text_ostream_backend = boost::log::sinks::text_ostream_backend;
 
 
-    explicit LoggerImpl(std::string const& channel_name, std::string const& tag_name);
+    template<class TChannel, class TTag>
+    explicit LoggerImpl(TChannel&& channel_name, TTag&& tag_name)  :
+            impl_(keywords::severity=boost::log::trivial::severity_level::info,
+                  keywords::channel=std::forward<TChannel>(channel_name))
+    {
+        using tag_t = typename std::conditional<
+                std::is_convertible<TTag &&, std::string>::value,
+                std::string,
+                typename std::decay<TTag>::type
+        >::type;
+        impl_.add_attribute("Tag", attrs::constant<tag_t>(std::forward<TTag>(tag_name)));
+        init();
+    }
+
     virtual ~LoggerImpl();
 
     void trace(std::string const& message);
@@ -96,16 +109,6 @@ private:
 
     void write(sdk::Severity level, std::string const& text);
 };
-
-
-template<bool mt>
-LoggerImpl<mt>::LoggerImpl(std::string const& channel_name, std::string const& tag_name) :
-        impl_(keywords::severity=boost::log::trivial::severity_level::info,
-            keywords::channel=channel_name)
-{
-    impl_.add_attribute("Tag", attrs::constant<std::string>(tag_name));
-    init();
-}
 
 template<bool mt>
 LoggerImpl<mt>::~LoggerImpl()

@@ -15,8 +15,9 @@ class Logger final : public LoggerImpl<mt>
 {
     using base_type = LoggerImpl<mt>;
 public:
-    explicit Logger(std::string const& channel_name, std::string const& tag)
-        : base_type(channel_name, tag)
+    template<typename ...Args>
+    explicit Logger(Args && ... args)
+        : base_type(std::forward<Args>(args)...)
     {}
 
     ~Logger() override = default;
