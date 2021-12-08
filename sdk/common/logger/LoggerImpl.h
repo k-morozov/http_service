@@ -74,11 +74,10 @@ public:
             impl_(keywords::severity=boost::log::trivial::severity_level::info,
                   keywords::channel=std::forward<TChannel>(channel_name))
     {
-        using tag_t = typename std::conditional<
-                std::is_convertible<TTag &&, std::string>::value,
+        using tag_t = typename std::conditional_t<
+                std::is_convertible_v<TTag &&, std::string>,
                 std::string,
-                typename std::decay<TTag>::type
-        >::type;
+                typename std::decay_t<TTag>>;
         impl_.add_attribute("Tag", attrs::constant<tag_t>(std::forward<TTag>(tag_name)));
         init();
     }
