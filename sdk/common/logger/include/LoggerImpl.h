@@ -2,13 +2,17 @@
 // Created by focus on 06.12.2021.
 //
 
-#include "pch.h"
+#ifndef ANALYTICS_LOGGERIMPL_H
+#define ANALYTICS_LOGGERIMPL_H
 
-#include "LoggerImpl.h"
-
-#include <iostream>
-#include <iomanip>
 #include <fstream>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
+#include <boost/log/sources/severity_channel_logger.hpp>
+#include <boost/log/sinks/async_frontend.hpp>
+#include <boost/log/utility/setup/file.hpp>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -27,7 +31,10 @@
 #include <boost/log/sinks/text_ostream_backend.hpp>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <boost/log/attributes.hpp>
-#include <boost/log/utility/setup/file.hpp>
+
+
+#include "Severity.h"
+#include "common/logger/src/Utils.h"
 
 namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
@@ -35,7 +42,6 @@ namespace src = boost::log::sources;
 namespace expr = boost::log::expressions;
 namespace attrs = boost::log::attributes;
 namespace keywords = boost::log::keywords;
-
 
 namespace detail {
     BOOST_LOG_ATTRIBUTE_KEYWORD(line_id, "LineID", unsigned int)
@@ -45,24 +51,107 @@ namespace detail {
     BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
 }
 
-LoggerImpl::LoggerImpl(std::string const& channel_name, std::string const& tag_name) :
-    Base(keywords::severity=boost::log::trivial::severity_level::info,
-        keywords::channel=channel_name)
+template<bool mt = false>
+class LoggerImpl
 {
-    add_attribute("Tag", attrs::constant<std::string>(tag_name));
+public:
+    using BaseType = typename std::conditional_t<
+            mt,
+            boost::log::sources::severity_channel_logger_mt< boost::log::trivial::severity_level>,
+            boost::log::sources::severity_channel_logger< boost::log::trivial::severity_level>>;
+
+    template<typename T>
+    using shared_ptr = boost::shared_ptr<T>;
+
+    template<typename T>
+    using asynchronous_sink = boost::log::sinks::asynchronous_sink<T>;
+
+    using text_ostream_backend = boost::log::sinks::text_ostream_backend;
+
+
+    explicit LoggerImpl(std::string const& channel_name, std::string const& tag_name);
+    virtual ~LoggerImpl();
+
+    void trace(std::string const& message);
+
+    void debug(std::string const& message);
+
+    void info(std::string const& message);
+
+    void warning(std::string const& message);
+
+    void error(std::string const& message);
+
+    void fatal(std::string const& message);
+
+private:
+    BaseType impl_;
+
+    using text_sink =  asynchronous_sink< boost::log::sinks::text_ostream_backend >;
+    shared_ptr<text_sink> sink_;
+
+    static void stop_logging(shared_ptr<asynchronous_sink<text_ostream_backend>>& sink);
+
+    void init();
+
+    void write(sdk::Severity level, std::string const& text);
+};
+
+
+template<bool mt>
+LoggerImpl<mt>::LoggerImpl(std::string const& channel_name, std::string const& tag_name) :
+        impl_(keywords::severity=boost::log::trivial::severity_level::info,
+            keywords::channel=channel_name)
+{
+    impl_.add_attribute("Tag", attrs::constant<std::string>(tag_name));
+    init();
 }
 
-LoggerImpl::~LoggerImpl()
+template<bool mt>
+LoggerImpl<mt>::~LoggerImpl()
 {
     stop_logging(sink_);
 }
 
-void LoggerImpl::write(sdk::Severity level, std::string const& text)
+template<bool mt>
+void LoggerImpl<mt>::write(sdk::Severity level, std::string const& text)
 {
-    BOOST_LOG_SEV(*this, Utils::convert(level)) << text;
+    BOOST_LOG_SEV(impl_, Utils::convert(level)) << text;
 }
 
-void LoggerImpl::init()
+template<bool mt>
+void LoggerImpl<mt>::trace(const std::string &message) {
+    write(sdk::Severity::Trace, message);
+}
+
+template<bool mt>
+void LoggerImpl<mt>::debug(const std::string &message) {
+    write(sdk::Severity::Debug, message);
+}
+
+template<bool mt>
+void LoggerImpl<mt>::info(std::string const& message)
+{
+    write(sdk::Severity::Info, message);
+}
+
+template<bool mt>
+void LoggerImpl<mt>::warning(const std::string &message) {
+    write(sdk::Severity::Warning, message);
+}
+
+template<bool mt>
+void LoggerImpl<mt>::error(const std::string &message) {
+    write(sdk::Severity::Error, message);
+}
+
+template<bool mt>
+void LoggerImpl<mt>::fatal(const std::string &message) {
+    write(sdk::Severity::Fatal, message);
+}
+
+template<bool mt>
+void LoggerImpl<mt>::init()
 {
     logging::add_file_log(
             keywords::rotation_size = 10 * 1024 * 1024,
@@ -104,7 +193,8 @@ void LoggerImpl::init()
     stop_logging(sink);
 }
 
-void LoggerImpl::stop_logging(boost::shared_ptr<asynchronous_sink<text_ostream_backend > >& sink)
+template<bool mt>
+void LoggerImpl<mt>::stop_logging(boost::shared_ptr<asynchronous_sink<text_ostream_backend > >& sink)
 {
     if (!sink)
         return;
@@ -122,3 +212,5 @@ void LoggerImpl::stop_logging(boost::shared_ptr<asynchronous_sink<text_ostream_b
 
     sink.reset();
 }
+
+#endif //ANALYTICS_LOGGERIMPL_H

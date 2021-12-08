@@ -1,13 +1,18 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(mlogger)
+project(mlogger CXX)
 set(CMAKE_CXX_STANDARD 20)
 
-add_library(mlogger STATIC src/logger.cpp src/LoggerImpl.cpp)
+add_library(mlogger INTERFACE
+        include/Logger.h
+        include/LoggerImpl.h
+        include/Severity.h
+        src/Utils.h
+        )
 
-target_include_directories(mlogger PUBLIC include)
-target_include_directories(mlogger PUBLIC pch)
+target_include_directories(mlogger INTERFACE include)
+target_include_directories(mlogger INTERFACE pch)
 
-target_link_libraries(mlogger ${CONAN_LIBS_BOOST})
+target_link_libraries(mlogger INTERFACE ${CONAN_LIBS_BOOST})
 
-target_precompile_headers(mlogger PRIVATE pch/pch.h)
+target_precompile_headers(mlogger INTERFACE pch/pch.h)
