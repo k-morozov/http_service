@@ -5,7 +5,7 @@
 #ifndef ANALYTICS_UTILS_H
 #define ANALYTICS_UTILS_H
 
-#include "Severity.h"
+#include "common/logger/Severity.h"
 
 #include <boost/log/trivial.hpp>
 

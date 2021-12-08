@@ -1,7 +1,7 @@
-#include "Logger.h"
+#include "common/logger/Logger.h"
 
 int main() {
-    sdk_logger_t lg("main", "tag name");
+    logger_t lg("main", "tag name");
 
     lg.trace("hello world!");
     lg.debug("hello world!");

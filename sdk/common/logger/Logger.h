@@ -11,18 +11,18 @@
 #include <memory>
 
 template<bool mt>
-class Logger_t : public LoggerImpl<mt>
+class Logger final : public LoggerImpl<mt>
 {
     using base_type = LoggerImpl<mt>;
 public:
-    explicit Logger_t(std::string const& channel_name, std::string const& tag)
+    explicit Logger(std::string const& channel_name, std::string const& tag)
         : base_type(channel_name, tag)
     {}
 
-    ~Logger_t() override = default;
+    ~Logger() override = default;
 };
 
-using sdk_logger_t = Logger_t<false>;
-using sdk_logger_mt = Logger_t<true>;
+using logger_t = Logger<false>;
+using logger_mt = Logger<true>;
 
 #endif //ANALYTICS_LOGGER_H

@@ -34,7 +34,7 @@
 
 
 #include "Severity.h"
-#include "common/logger/src/Utils.h"
+#include "Utils.h"
 
 namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
