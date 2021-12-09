@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 add_library(mlogger INTERFACE)
 target_sources(mlogger INTERFACE
         Logger.h
-        LoggerImpl.h
+        LoggerBase.h
         Severity.h
         Utils.h
 )

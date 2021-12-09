@@ -6,24 +6,27 @@
 #define ANALYTICS_LOGGER_H
 
 #include "Severity.h"
-#include "LoggerImpl.h"
+#include "LoggerBase.h"
 
 #include <memory>
 
-template<bool mt>
-class Logger final : public LoggerImpl<mt>
-{
-    using base_type = LoggerImpl<mt>;
-public:
-    template<typename ...Args>
-    explicit Logger(Args && ... args)
-        : base_type(std::forward<Args>(args)...)
-    {}
+namespace Log {
 
-    ~Logger() override = default;
-};
+    template<bool mt>
+    class Logger final : public LoggerBase<mt> {
+        using base_type = LoggerBase<mt>;
+        static constexpr auto channel_name = "main";
 
-using logger_t = Logger<false>;
-using logger_mt = Logger<true>;
+    public:
+        template<typename ...Args>
+        explicit Logger(Args &&... args)
+                : base_type(channel_name, std::forward<Args>(args)...) {}
+
+        ~Logger() override = default;
+    };
+
+}
+using logger_t = Log::Logger<false>;
+using logger_mt = Log::Logger<true>;
 
 #endif //ANALYTICS_LOGGER_H
