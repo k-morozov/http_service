@@ -15,12 +15,11 @@ namespace Log {
     template<bool mt>
     class Logger final : public LoggerBase<mt> {
         using base_type = LoggerBase<mt>;
-        static constexpr auto channel_name = "main";
 
     public:
-        template<typename ...Args>
-        explicit Logger(Args &&... args)
-                : base_type(channel_name, std::forward<Args>(args)...) {}
+        template<typename Arg, typename ...Args>
+        explicit Logger(Arg && arg, Args &&... args)
+                : base_type(std::forward<Arg>(arg), std::forward<Args>(args)...) {}
 
         ~Logger() override = default;
     };

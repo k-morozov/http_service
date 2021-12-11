@@ -1,7 +1,7 @@
 #include "common/logger/Logger.h"
 
 int main() {
-    logger_t lg("class_name", "1");
+    logger_t lg("main", "class_name", "1");
 
     lg.trace("hello world!");
     lg.debug("hello world!");
