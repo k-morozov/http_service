@@ -6,6 +6,7 @@
 #define ANALYTICS_LOGGERBASE_H
 
 #include <fstream>
+#include <mutex>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
