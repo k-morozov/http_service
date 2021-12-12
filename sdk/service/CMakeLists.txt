@@ -8,14 +8,17 @@ add_library(service STATIC)
 target_include_directories(service PUBLIC include)
 target_include_directories(service PRIVATE src)
 
-target_sources(service PUBLIC
+target_sources(service PRIVATE
     include/IService.h
-    include/Gateway.h
+        include/Gateway.h
         src/gateway/Gateway.cpp
+        src/acceptor/Acceptor.h
+        src/acceptor/Acceptor.cpp
 )
 
 target_link_libraries(service
-        PUBLIC ${CONAN_LIBS_BOOST}
+    PUBLIC
+        ${CONAN_LIBS_BOOST}
         mlogger
 )
 

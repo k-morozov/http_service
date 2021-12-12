@@ -2,7 +2,10 @@
 // Created by focus on 12.12.2021.
 //
 
-#include "Gateway.h"
+#include <service/include/Gateway.h>
+#include "acceptor/Acceptor.h"
+
+#include <unordered_set>
 
 
 class Gateway::GatewayImpl final : public IService {
@@ -24,7 +27,6 @@ public:
     }
 
 private:
-
 };
 
 
@@ -35,15 +37,17 @@ Gateway::Gateway() :
 }
 
 
-void Gateway::prepare() {
+void Gateway::prepare()
+{
+}
+
+void Gateway::run()
+{
 
 }
 
-void Gateway::run() {
-
-}
-
-void Gateway::stop() {
+void Gateway::stop()
+{
 
 }
 

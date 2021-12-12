@@ -5,15 +5,15 @@
 #ifndef ANALYTICS_ISERVICE_H
 #define ANALYTICS_ISERVICE_H
 
+
 class IService {
 public:
     virtual void prepare() = 0;
     virtual void run() = 0;
     virtual void stop() = 0;
 
-    virtual ~IService() = 0;
+    virtual ~IService() = default;
 };
 
-inline IService::~IService() = default;
 
 #endif //ANALYTICS_ISERVICE_H

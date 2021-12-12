@@ -22,6 +22,7 @@ public:
 
     void stop() override;
 
+private:
     ~Gateway() override;
 
 private:
