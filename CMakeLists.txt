@@ -7,6 +7,9 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 set(CONAN_DISABLE_CHECK_COMPILER True)
 conan_basic_setup()
 
+include_directories(SYSTEM
+        ${CONAN_INCLUDE_DIRS_BOOST}
+)
 
 include_directories(sdk)
 

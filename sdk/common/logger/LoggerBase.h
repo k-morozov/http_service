@@ -36,9 +36,13 @@
 #include "Severity.h"
 #include "Utils.h"
 
+
 namespace Log {
 
     namespace impl {
+
+        inline std::once_flag onceFlag;
+
         namespace logging = boost::log;
         namespace sinks = boost::log::sinks;
         namespace src = boost::log::sources;
@@ -94,7 +98,8 @@ namespace Log {
                     std::string,
                     typename std::decay_t<TChannel>>;
             impl_.add_attribute(name::Channel, impl::attrs::constant<std::string>(std::forward<channel_t>(channel_name)));
-            init();
+
+            std::call_once(impl::onceFlag, &LoggerBase<mt>::init, this);
         }
 
         template<
