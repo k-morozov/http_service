@@ -8,4 +8,5 @@ add_executable(analytics main.cpp)
 target_link_libraries(analytics
         mlogger
         service
+        context
 )

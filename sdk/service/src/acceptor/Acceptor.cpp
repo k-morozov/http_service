@@ -32,7 +32,10 @@ void Acceptor::run()
     acceptor_.async_accept(
             boost::asio::make_strand(context_),
             [this](auto&& arg1, auto&& arg2) {
-                lg_.info("new connection");
+                std::stringstream ss;
+                ss << "new connection, thread_id=" << std::this_thread::get_id();
+                lg_.info(ss.str());
+
                 run();
             });
 }
