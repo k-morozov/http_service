@@ -6,6 +6,8 @@
 #define ANALYTICS_LOGGERBASE_H
 
 #include <fstream>
+#include <mutex>
+#include <boost/format.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -36,9 +38,13 @@
 #include "Severity.h"
 #include "Utils.h"
 
+
 namespace Log {
 
     namespace impl {
+
+        inline std::once_flag onceFlag;
+
         namespace logging = boost::log;
         namespace sinks = boost::log::sinks;
         namespace src = boost::log::sources;
@@ -94,7 +100,8 @@ namespace Log {
                     std::string,
                     typename std::decay_t<TChannel>>;
             impl_.add_attribute(name::Channel, impl::attrs::constant<std::string>(std::forward<channel_t>(channel_name)));
-            init();
+
+            std::call_once(impl::onceFlag, &LoggerBase<mt>::init, this);
         }
 
         template<
@@ -146,6 +153,9 @@ namespace Log {
 
         void info(std::string const &message);
 
+        template<class TFmt, class ... Args>
+        void info_f(TFmt&& fmt, Args&& ...args);
+
         void warning(std::string const &message);
 
         void error(std::string const &message);
@@ -189,6 +199,13 @@ namespace Log {
     template<bool mt>
     void LoggerBase<mt>::info(std::string const &message) {
         write(sdk::Severity::Info, message);
+    }
+
+    template<bool mt>
+    template<class TFmt, class ... Args>
+    void LoggerBase<mt>::info_f(TFmt&& fmt, Args&& ...args) {
+        boost::format f(fmt);
+        write(sdk::Severity::Info, boost::str((f % ... % args)));
     }
 
     template<bool mt>
