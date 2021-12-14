@@ -38,6 +38,8 @@ Context::Impl::Impl() :
 {
     addThread();
     addThread();
+
+    lg_.info_f("test format: %1%, %2%", "hello", "world");
 }
 
 Context::Impl::~Impl()
@@ -62,10 +64,10 @@ void Context::Impl::run()
             break;
         } catch (std::exception const& ex)
         {
-            // add log?
+            lg_.error("exception in context thread:");
         }
     }
-    lg_.info("finish impl::run");
+    lg_.info("finish context thread");
 }
 
 
@@ -74,6 +76,8 @@ void Context::Impl::run()
 Context::Context()
 {
     impl_ = std::make_unique<Context::Impl>();
+    if (!impl_)
+        throw std::bad_alloc();
 }
 
 Context::~Context()

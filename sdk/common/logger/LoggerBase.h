@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <mutex>
+#include <boost/format.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -152,6 +153,9 @@ namespace Log {
 
         void info(std::string const &message);
 
+        template<class TFmt, class ... Args>
+        void info_f(TFmt&& fmt, Args&& ...args);
+
         void warning(std::string const &message);
 
         void error(std::string const &message);
@@ -195,6 +199,13 @@ namespace Log {
     template<bool mt>
     void LoggerBase<mt>::info(std::string const &message) {
         write(sdk::Severity::Info, message);
+    }
+
+    template<bool mt>
+    template<class TFmt, class ... Args>
+    void LoggerBase<mt>::info_f(TFmt&& fmt, Args&& ...args) {
+        boost::format f(fmt);
+        write(sdk::Severity::Info, boost::str((f % ... % args)));
     }
 
     template<bool mt>
