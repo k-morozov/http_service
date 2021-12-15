@@ -7,7 +7,6 @@
 
 #include <fstream>
 #include <mutex>
-#include <boost/format.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -33,7 +32,7 @@
 #include <boost/log/sinks/text_ostream_backend.hpp>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <boost/log/attributes.hpp>
-
+#include <boost/format.hpp>
 
 #include "Severity.h"
 #include "Utils.h"
@@ -151,14 +150,17 @@ namespace Log {
 
         void debug(std::string const &message);
 
-        void info(std::string const &message);
+        void info(std::string const &message) noexcept;
 
         template<class TFmt, class ... Args>
-        void info_f(TFmt&& fmt, Args&& ...args);
+        void info_f(TFmt&& fmt, Args&& ...args) noexcept;
 
         void warning(std::string const &message);
 
         void error(std::string const &message);
+
+        template<class TFmt, class ... Args>
+        void error_f(TFmt&& fmt, Args&& ...args) noexcept;
 
         void fatal(std::string const &message);
 
@@ -173,7 +175,10 @@ namespace Log {
 
         void init();
 
-        void write(sdk::Severity level, std::string const &text);
+        void write(sdk::Severity level, std::string const &text) noexcept;
+
+        template<class TFmt, class ... Args>
+        void write_f(sdk::Severity level, TFmt&&, Args&& ...) noexcept;
     };
 
     template<bool mt>
@@ -182,8 +187,25 @@ namespace Log {
     }
 
     template<bool mt>
-    void LoggerBase<mt>::write(sdk::Severity level, std::string const &text) {
-        BOOST_LOG_SEV(impl_, Utils::convert(level)) << text;
+    void LoggerBase<mt>::write(sdk::Severity level, std::string const &text) noexcept {
+        try {
+            BOOST_LOG_SEV(impl_, Utils::convert(level)) << text;
+        } catch (...)
+        {
+            // @TODO thinks what we can do?
+        }
+    }
+
+    template<bool mt>
+    template<class TFmt, class ... Args>
+    void LoggerBase<mt>::write_f(sdk::Severity level, TFmt&& fmt, Args&& ... args) noexcept {
+        try {
+            boost::format f(std::forward<TFmt>(fmt));
+            write(level, boost::str((f % ... % std::forward<Args>(args))));
+        } catch (...)
+        {
+            // @TODO thinks what we can do?
+        }
     }
 
     template<bool mt>
@@ -197,15 +219,14 @@ namespace Log {
     }
 
     template<bool mt>
-    void LoggerBase<mt>::info(std::string const &message) {
+    void LoggerBase<mt>::info(std::string const &message) noexcept {
         write(sdk::Severity::Info, message);
     }
 
     template<bool mt>
     template<class TFmt, class ... Args>
-    void LoggerBase<mt>::info_f(TFmt&& fmt, Args&& ...args) {
-        boost::format f(fmt);
-        write(sdk::Severity::Info, boost::str((f % ... % args)));
+    void LoggerBase<mt>::info_f(TFmt&& fmt, Args&& ...args) noexcept {
+        write_f(sdk::Severity::Info, std::forward<TFmt>(fmt), std::forward<Args>(args)...);
     }
 
     template<bool mt>
@@ -216,6 +237,12 @@ namespace Log {
     template<bool mt>
     void LoggerBase<mt>::error(const std::string &message) {
         write(sdk::Severity::Error, message);
+    }
+
+    template<bool mt>
+    template<class TFmt, class ... Args>
+    void LoggerBase<mt>::error_f(TFmt&& fmt, Args&& ...args) noexcept {
+        write_f(sdk::Severity::Error, std::forward<TFmt>(fmt), std::forward<Args>(args)...);
     }
 
     template<bool mt>

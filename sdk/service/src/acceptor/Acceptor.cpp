@@ -30,11 +30,8 @@ void Acceptor::run()
 {
     lg_.info("wait accept");
     acceptor_.async_accept(
-            boost::asio::make_strand(context_),
-            [this](auto&& arg1, auto&& arg2) {
-                std::stringstream ss;
-                ss << "new connection, thread_id=" << std::this_thread::get_id();
-                lg_.info(ss.str());
+            [this](boost::system::error_code code, auto&& arg2) {
+                if (boost::asio::error::operation_aborted == code) return;
 
                 run();
             });
@@ -47,5 +44,7 @@ void Acceptor::stop()
 
 Acceptor::~Acceptor()
 {
+    acceptor_.cancel();
+    acceptor_.close();
     lg_.info("destroy");
 }
