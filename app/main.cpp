@@ -1,4 +1,3 @@
-#include <common/logger/Logger.h>
 #include <service/include/Gateway.h>
 #include <common/context/include/Context.h>
 
@@ -7,22 +6,24 @@
 #include <future>
 
 int main() {
-    std::shared_ptr<IService> service(new Gateway(), [](IService* p) { delete(p); });
-    service->prepare();
+    logger_t lg("sdk", "main");
 
-    {
-        Context ctx;
-        boost::asio::ip::tcp::endpoint ep(boost::asio::ip::make_address("127.0.0.1"), 8080);
+    namespace ba = boost::asio;
+    Context ctx;
+    ba::ip::tcp::endpoint ep(ba::ip::make_address("127.0.0.1"),
+                             8080);
 
-        Acceptor a(ctx.getContext(), ep);
-        a.prepare();
-        a.run();
-    }
+    auto acceptor = std::make_unique<sdk::Acceptor>(ctx.getContext(), std::move(ep));
+
+    sdk::Gateway service(std::move(acceptor));
+    service.prepare();
+    service.run();
 
 
-//    char c;
-//    std::cin >> c;
+//    a.prepare();
+//    a.run();
 
+    ctx.getContext().run();
 
     return 0;
 }

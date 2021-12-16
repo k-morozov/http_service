@@ -3,55 +3,77 @@
 //
 
 #include <service/include/Gateway.h>
+
+#include <boost/asio/io_context.hpp>
+
 #include "acceptor/Acceptor.h"
 
 #include <unordered_set>
 
 
+namespace sdk {
+
 class Gateway::GatewayImpl final : public IService {
 public:
-    void prepare() override {
 
+    explicit GatewayImpl(std::unique_ptr<sdk::Acceptor> acceptor) :
+        acceptor_(std::move(acceptor)),
+        lg_("sdk", "Gateway")
+    {
+        if (!acceptor_)
+            throw std::bad_alloc();
+
+        lg_.info("create");
+    }
+
+    void prepare() override {
+        lg_.info("prepare");
+        acceptor_->prepare();
     }
 
     void run() override {
-
+        acceptor_->run();
     }
 
     void stop() override {
-
+        acceptor_->stop();
     }
 
     ~GatewayImpl() override {
-
+        lg_.info("destroy");
     }
 
 private:
+    std::unique_ptr<sdk::Acceptor> acceptor_;
+    logger_t lg_;
 };
 
 
-Gateway::Gateway() :
-    lg_("sdk", "Gateway")
+Gateway::Gateway(std::unique_ptr<sdk::Acceptor> acceptor)
 {
-    lg_.info("create");
+    impl_ = std::make_unique<GatewayImpl>(std::move(acceptor));
+    if (!impl_)
+        throw std::bad_alloc();
+
+//    impl_->lg_.info("create");
 }
 
 
-void Gateway::prepare()
-{
+void Gateway::prepare() {
+    impl_->prepare();
 }
 
-void Gateway::run()
-{
-
+void Gateway::run() {
+    impl_->run();
 }
 
-void Gateway::stop()
-{
-
+void Gateway::stop() {
+    impl_->stop();
 }
 
-Gateway::~Gateway()
-{
-    lg_.info("destroy");
+Gateway::~Gateway() {
+//    lg_.info("destroy");
+}
+
+
 }

@@ -12,9 +12,14 @@
 #include <memory>
 
 
+namespace sdk {
+
+
+class Acceptor;
+
 class Gateway final : public IService {
 public:
-    Gateway();
+    explicit Gateway(std::unique_ptr<sdk::Acceptor> acceptor);
 
     void prepare() override;
 
@@ -22,16 +27,14 @@ public:
 
     void stop() override;
 
-private:
     ~Gateway() override;
 
 private:
     class GatewayImpl;
     std::unique_ptr<GatewayImpl> impl_;
-
-    logger_t lg_;
 };
 
 
+}
 
 #endif //ANALYTICS_GATEWAY_H

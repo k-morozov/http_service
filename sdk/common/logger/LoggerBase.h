@@ -89,6 +89,8 @@ namespace Log {
             class TChannel,
             typename = typename std::enable_if_t<
                 !std::is_same_v<typename std::decay_t<TChannel>, LoggerBase>
+                    &&
+                !std::is_base_of_v<LoggerBase, typename std::decay_t<TChannel>>
             >
         >
         explicit LoggerBase(TChannel&& channel_name)  :
@@ -108,6 +110,8 @@ namespace Log {
                 class TClass,
                 typename = typename std::enable_if_t<
                     !std::is_same_v<typename std::decay_t<TChannel>, LoggerBase>
+                        &&
+                    !std::is_base_of_v<LoggerBase, typename std::decay_t<TChannel>>
                 >
         >
         explicit LoggerBase(TChannel&& channel_name, TClass&& class_name)  :
@@ -126,6 +130,8 @@ namespace Log {
                 class TTag,
                 typename = typename std::enable_if_t<
                     !std::is_same_v<typename std::decay_t<TChannel>, LoggerBase>
+                            &&
+                    !std::is_base_of_v<LoggerBase, typename std::decay_t<TChannel>>
                 >
         >
         explicit LoggerBase(TChannel&& channel_name, TClass&& class_name, TTag&& tag_name)  :

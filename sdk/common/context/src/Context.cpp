@@ -9,7 +9,6 @@
 #include <boost/asio.hpp>
 #include <boost/asio/thread_pool.hpp>
 
-#include <iostream>
 #include <thread>
 #include <shared_mutex>
 
@@ -103,6 +102,8 @@ void Context::Impl::run()
     {
         try {
             lg_.info_f("Impl::run %1%", std::this_thread::get_id());
+
+            [[maybe_unused]]
             auto guard = boost::asio::make_work_guard(context_);
             context_.run();
             break;
