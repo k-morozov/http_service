@@ -29,9 +29,17 @@ void Acceptor::prepare() {
 void Acceptor::run() {
     lg_.info("wait accept");
     acceptor_.async_accept(
-            [this](boost::system::error_code code, auto &&arg2) {
+            [this](boost::system::error_code code, boost::asio::ip::tcp::socket socket) {
                 if (boost::asio::error::operation_aborted == code)
                     return;
+
+                if (!code)
+                {
+                    lg_.error_f("error connection %1%: %2%", code, code.message());
+                    return;
+                }
+
+                lg_.info_f("connection from %1%", socket.remote_endpoint());
 
                 run();
             });

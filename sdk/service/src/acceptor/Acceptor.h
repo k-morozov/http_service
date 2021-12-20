@@ -22,9 +22,9 @@
 
 namespace sdk {
 
-
 class Acceptor final : public IService {
 public:
+
     explicit Acceptor(boost::asio::io_context &, boost::asio::ip::tcp::endpoint endpoint);
 
     void prepare() override;

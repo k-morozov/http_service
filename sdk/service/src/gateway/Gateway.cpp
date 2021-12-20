@@ -48,16 +48,12 @@ private:
     logger_t lg_;
 };
 
-
 Gateway::Gateway(std::unique_ptr<sdk::Acceptor> acceptor)
 {
     impl_ = std::make_unique<GatewayImpl>(std::move(acceptor));
     if (!impl_)
         throw std::bad_alloc();
-
-//    impl_->lg_.info("create");
 }
-
 
 void Gateway::prepare() {
     impl_->prepare();

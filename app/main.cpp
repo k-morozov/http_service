@@ -3,7 +3,7 @@
 
 #include <service/src/acceptor/Acceptor.h>
 
-#include <future>
+#include <session/include/SessionBase.h>
 
 int main() {
     logger_t lg("sdk", "main");
@@ -18,10 +18,6 @@ int main() {
     sdk::Gateway service(std::move(acceptor));
     service.prepare();
     service.run();
-
-
-//    a.prepare();
-//    a.run();
 
     ctx.getContext().run();
 

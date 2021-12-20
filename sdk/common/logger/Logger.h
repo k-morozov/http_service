@@ -25,7 +25,9 @@ namespace Log {
     };
 
 }
+
 using logger_t = Log::Logger<false>;
 using logger_mt = Log::Logger<true>;
+
 
 #endif //ANALYTICS_LOGGER_H
