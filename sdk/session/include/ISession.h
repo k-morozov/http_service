@@ -2,8 +2,7 @@
 // Created by focus on 20.12.2021.
 //
 
-#ifndef ANALYTICS_ISESSION_H
-#define ANALYTICS_ISESSION_H
+#pragma once
 
 
 namespace sdk {
@@ -21,5 +20,3 @@ public:
 
 }
 
-
-#endif //ANALYTICS_ISESSION_H

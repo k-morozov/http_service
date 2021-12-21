@@ -3,7 +3,7 @@
 
 #include <service/src/acceptor/Acceptor.h>
 
-#include <session/include/SessionBase.h>
+#include <session/include/Session.h>
 
 int main() {
     logger_t lg("sdk", "main");

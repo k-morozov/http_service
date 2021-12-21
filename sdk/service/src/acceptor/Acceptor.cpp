@@ -4,6 +4,9 @@
 
 #include "Acceptor.h"
 
+#include <session/include/Session.h>
+
+
 namespace sdk {
 
 
@@ -33,13 +36,19 @@ void Acceptor::run() {
                 if (boost::asio::error::operation_aborted == code)
                     return;
 
-                if (!code)
+                if (code)
                 {
                     lg_.error_f("error connection %1%: %2%", code, code.message());
                     return;
                 }
 
                 lg_.info_f("connection from %1%", socket.remote_endpoint());
+
+                auto session = std::make_shared<sdk::Session<boost::asio::ip::tcp::socket>>(
+                        context_,
+                        std::move(socket));
+
+                session->start();
 
                 run();
             });

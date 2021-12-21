@@ -2,8 +2,7 @@
 // Created by focus on 20.12.2021.
 //
 
-#ifndef ANALYTICS_SESSION_H
-#define ANALYTICS_SESSION_H
+#pragma once
 
 #include "ISession.h"
 
@@ -41,5 +40,3 @@ private:
 
 }
 
-
-#endif //ANALYTICS_SESSION_H

@@ -11,6 +11,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 target_sources(${PROJECT_NAME} PRIVATE
         include/ISession.h
         include/SessionBase.h
+        include/Session.h
         src/SessionBase.cpp
 )
 

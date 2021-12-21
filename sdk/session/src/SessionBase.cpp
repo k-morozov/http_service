@@ -21,15 +21,16 @@ SessionBase::~SessionBase()
 }
 
 void SessionBase::start() {
-
+    // timer
+    doStart();
 }
 
 void SessionBase::cancel() {
-
+    // timer
 }
 
 void SessionBase::stop() {
-
+    // timer
 }
 
 
