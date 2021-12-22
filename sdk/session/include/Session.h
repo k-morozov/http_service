@@ -34,6 +34,7 @@ public:
         SessionBase(context),
         stream(std::forward<Args>(args)...)
     {
+//        stream.set_option(boost::asio::ip::tcp::no_delay(true));
         lg_.info("create");
     }
 
@@ -50,7 +51,7 @@ protected:
 
         namespace bb = boost::beast;
 
-        bb::http::async_read(peer(), buffer_, parser_,
+        bb::http::async_read(peer(), buffer_, request_,
                    [this, s=this->shared_from_this()](bb::error_code code, size_t bytes)
                    {
                        if (code == boost::beast::http::error::end_of_stream)
@@ -59,17 +60,19 @@ protected:
                            return;
                        }
 
-                       if (bytes == 0)
-                           return ;
+                       buffer_.clear();
+//                       if (bytes == 0)
+//                           return ;
 
-                        lg_.info_f("Have request:\n%1%", parser_.get());
-                        auto msg = parser_.release();
-                        HandleRequest(msg,
+                        lg_.info_f("Have request:\n%1%", request_);
+//                        auto msg = request_
+                        HandleRequest(request_,
                                       [this, s](boost::beast::http::response<boost::beast::http::empty_body> response)
                                       {
                                             lg_.info("ready response");
                                             lambda_(std::move(response));
                                             lg_.info("send response");
+
                                       });
                    });
     }
@@ -89,7 +92,7 @@ protected:
 
 private:
     Stream stream;
-    Buffer buffer_{8192};
+    Buffer buffer_;
     Parser parser_{};
 
     struct SendLambda
