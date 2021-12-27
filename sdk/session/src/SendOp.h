@@ -13,19 +13,20 @@ namespace sdk
 
 
 template<class T>
-struct SendLambda
+struct SendOp
 {
     using SessionType = T;
 
     SessionType& self_;
 
-    explicit SendLambda(T & self) : self_(self) {}
+    explicit SendOp(T & self) : self_(self) {}
 
-    template<class Body, class Fields>
-    void operator()(boost::beast::http::message<false, Body, Fields> message) const
+    template<class TBody, class TFields>
+    void operator()(boost::beast::http::message<false, TBody, TFields> message) const
     {
-        auto sp = std::make_shared<
-        boost::beast::http::message<false, Body, Fields> >(std::move(message));
+        using MessageType = boost::beast::http::message<false, TBody, TFields>;
+
+        auto sp = std::make_shared<MessageType>(std::move(message));
         self_.response_ = sp;
 
         auto self = self_.shared_from_this();
