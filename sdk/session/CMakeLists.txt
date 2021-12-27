@@ -14,6 +14,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         include/Session.h
         src/SessionBase.cpp
         src/HandleRequest.h
+        src/SendOp.h
 )
 
 target_link_libraries(${PROJECT_NAME}
