@@ -13,29 +13,34 @@ namespace sdk
 
 
 template<class T>
-struct SendOp
+class SendOp
 {
     using SessionType = T;
+    using TResPtr = std::shared_ptr<void>;
 
-    SessionType& self_;
+    SessionType& session_;
+    TResPtr response_;
 
-    explicit SendOp(T & self) : self_(self) {}
+public:
+
+    explicit SendOp(T & self) : session_(self) {}
 
     template<class TBody, class TFields>
-    void operator()(boost::beast::http::message<false, TBody, TFields> message) const
+    void operator()(boost::beast::http::message<false, TBody, TFields> message)
     {
-        using MessageType = boost::beast::http::message<false, TBody, TFields>;
+        using TMessage = boost::beast::http::message<false, TBody, TFields>;
 
-        auto sp = std::make_shared<MessageType>(std::move(message));
-        self_.response_ = sp;
+        auto sp = std::make_shared<TMessage>(std::move(message));
+        response_ = sp;
 
-        auto self = self_.shared_from_this();
-        boost::beast::http::async_write(self_.peer(),
-                                        *sp,
-                                        [&p = self_, self](auto&& a, auto&& b)
+        auto session = session_.shared_from_this();
+        boost::beast::http::async_write(session_.peer(),
+                                        message,
+                                        [session, this](auto&& a, auto&& b)
                                         {
-                                            p.lg_.info("write done");
-                                            p.doRead();
+                                            session->lg_.info("write done");
+                                            session->doRead();
+                                            delete this;
                                         });
     }
 };

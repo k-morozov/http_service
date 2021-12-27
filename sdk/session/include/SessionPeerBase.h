@@ -26,8 +26,6 @@ public:
     using SessionType = SessionPeerBase<Stream>;
     using Buffer = boost::beast::flat_buffer;
     using Request = boost::beast::http::request<boost::beast::http::string_body>;
-    using Parser = boost::beast::http::request_parser<boost::beast::http::string_body>;
-    using Response = std::shared_ptr<void>;
 
     template<typename ...Args>
     explicit SessionPeerBase(boost::asio::io_context& context, Args&& ...args) :
@@ -65,8 +63,12 @@ protected:
                                       [this, s](boost::beast::http::response<boost::beast::http::empty_body> response)
                                       {
                                         lg_.info("ready response");
-                                        op_(std::move(response));
-                                        lg_.info("send response");
+                                        auto* op = new SendOp<SessionType>(*this);
+                                        if (op)
+                                        {
+                                            op->template operator()(std::move(response));
+                                            lg_.info("send response");
+                                        }
                                       });
                    });
     }
@@ -87,13 +89,9 @@ protected:
 private:
     Stream stream;
     Buffer buffer_{8128};
-    Parser parser_{};
+    Request request_;
 
     friend SendOp<SessionType>;
-    SendOp<SessionType> op_ {*this};
-
-    Request request_;
-    Response response_;
 };
 
 
