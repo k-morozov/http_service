@@ -29,6 +29,14 @@ void Acceptor::prepare() {
     lg_.info("start to listen");
 }
 
+struct Bar
+{
+    void operator()()
+    {
+        std::cout << "Hello from bar!" << std::endl;
+    }
+
+};
 void Acceptor::run() {
     lg_.info("wait accept");
     acceptor_.async_accept(
@@ -51,6 +59,9 @@ void Acceptor::run() {
 //                session->start();
 
                 auto con = std::make_shared<Connection>(std::move(socket));
+
+                Bar b;
+                auto g = con->asyncRead(boost::asio::use_future);
 
                 run();
             });

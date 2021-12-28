@@ -14,3 +14,8 @@ Connection::~Connection()
 {
 
 }
+
+Connection::executor_type Connection::get_executor()
+{
+    return impl_->get_executor();
+}

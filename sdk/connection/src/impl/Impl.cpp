@@ -15,3 +15,8 @@ Connection::Impl::~Impl()
 {
     lg_.info("destroy");
 }
+
+Connection::executor_type Connection::Impl::get_executor()
+{
+    return socket_.get_executor();
+}

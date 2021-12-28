@@ -20,7 +20,7 @@ public:
     explicit Impl(socket_t socket);
     ~Impl();
 
-
+    executor_type get_executor();
 
 private:
     socket_t socket_;
