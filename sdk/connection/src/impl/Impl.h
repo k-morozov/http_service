@@ -23,7 +23,7 @@ public:
 
 
 private:
-    boost::asio::ip::tcp::socket socket_;
+    socket_t socket_;
     logger_mt lg_;
 };
 

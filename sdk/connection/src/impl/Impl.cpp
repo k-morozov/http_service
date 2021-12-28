@@ -4,7 +4,7 @@
 
 #include "Impl.h"
 
-Connection::Impl::Impl(boost::asio::ip::tcp::socket socket) :
+Connection::Impl::Impl(socket_t socket) :
     socket_(std::move(socket)),
     lg_("sdk", "Connection")
 {
