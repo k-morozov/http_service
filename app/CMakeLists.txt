@@ -10,4 +10,5 @@ target_link_libraries(analytics
         service
         context
         session
+        connection
 )

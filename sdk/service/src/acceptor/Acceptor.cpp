@@ -4,8 +4,8 @@
 
 #include "Acceptor.h"
 
-#include <session/include/Session.h>
-
+#include "session/include/Session.h"
+#include "connection/include/Connection.h"
 
 namespace sdk {
 
@@ -44,11 +44,13 @@ void Acceptor::run() {
 
                 lg_.info_f("connection from %1%", socket.remote_endpoint());
 
-                auto session = std::make_shared<sdk::Session<boost::asio::ip::tcp::socket>>(
-                        context_,
-                        std::move(socket));
+//                auto session = std::make_shared<sdk::Session>(
+//                        context_,
+//                        std::move(socket));
+//
+//                session->start();
 
-                session->start();
+                auto con = std::make_shared<Connection>(std::move(socket));
 
                 run();
             });
