@@ -6,10 +6,11 @@
 
 #include "impl/Impl.h"
 
-Connection::Connection(boost::asio::ip::tcp::socket socket) {
-
+Connection::Connection(boost::asio::ip::tcp::socket socket)
+{
 }
 
-Connection::~Connection() {
+Connection::~Connection()
+{
 
 }

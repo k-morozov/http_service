@@ -19,6 +19,9 @@ public:
     explicit Connection(protocol_t::socket socket);
     ~Connection();
 
+    template<class THandler>
+    void asyncRead(THandler&& h);
+
 private:
     class Impl;
     using ImplPtr = std::shared_ptr<Impl>;
@@ -26,3 +29,10 @@ private:
     ImplPtr impl_;
 
 };
+
+
+template<class THandler>
+void Connection::asyncRead(THandler &&h)
+{
+
+}
