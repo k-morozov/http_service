@@ -9,6 +9,5 @@ target_link_libraries(analytics
         mlogger
         service
         context
-        session
         connection
 )

@@ -13,37 +13,34 @@
 
 #include "read_job_base.h"
 
+namespace sdk {
+    template<class THandler>
+    struct Connection::read_job final
+            : public read_job_base {
+        using handler_t = boost::beast::async_base<THandler, executor_type>;
 
-#define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT 1
+    public:
+        template<class U>
+        read_job(U &&h, impl_ptr self);
 
-template<class THandler>
-struct Connection::read_job final
-    : public read_job_base
-{
-    using handler_t = boost::beast::async_base<THandler, executor_type>;
+        ~read_job() override = default;
 
-public:
+    private:
+        handler_t handler_;
+
+    private:
+        void complete_impl(error_code ec, size_t bytes) override {
+            handler_.template complete_now(ec, bytes);
+        }
+    };
+
+
+    template<class THandler>
     template<class U>
-    read_job(U&& h, impl_ptr self);
-
-    ~read_job() override = default;
-
-private:
-    handler_t handler_;
-
-private:
-    void complete_impl(error_code ec, size_t bytes) override
-    {
-        handler_.template complete_now(ec, bytes);
-    }
-};
-
-
-template<class THandler>
-template<class U>
-Connection::read_job<THandler>::read_job(U &&h, Connection::impl_ptr self) :
-    read_job_base(self)
+    Connection::read_job<THandler>::read_job(U &&h, Connection::impl_ptr self) :
+            read_job_base(self)
 //    handler_(std::forward<U>(h), self->get_executor())
-{
+    {
 
+    }
 }

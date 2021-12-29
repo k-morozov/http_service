@@ -4,70 +4,79 @@
 
 #pragma once
 
-
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/executor.hpp>
+
+#if BOOST_VERSION >= 107400
+    #include <boost/asio/executor.hpp>
+#else
+    #include <boost/asio/any_io_executor.hpp>
+#endif
 
 #include <memory>
 #include <iostream>
 #include <mutex>
 
 
-class Connection
-{
-public:
-    using protocol_t = boost::asio::ip::tcp;
-    using error_code = boost::system::error_code;
-    using executor_type = boost::asio::executor;
-    using mutex_type = std::mutex;
-    using lock_type = std::unique_lock<mutex_type>;
+namespace sdk {
 
 
-    explicit Connection(protocol_t::socket socket);
-    ~Connection();
+    class Connection {
+    public:
+        using protocol_t = boost::asio::ip::tcp;
+        using error_code = boost::system::error_code;
+#if BOOST_VERSION >= 107400
+        using executor_type = boost::asio::any_io_executor;
+#else
+        using executor_type = boost::asio::executor;
+#endif
+        using mutex_type = std::mutex;
+        using lock_type = std::unique_lock<mutex_type>;
 
-    executor_type get_executor();
 
-    struct foo
-    {
+        explicit Connection(protocol_t::socket socket);
+
+        ~Connection();
+
+        executor_type get_executor();
+
+        struct foo {
+            template<class T>
+            void operator()(T &&h) const {
+                std::cout << "Hello from foo" << std::endl;
+                h();
+            }
+        };
+
+        template<class THandler>
+        BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(void)) asyncRead(THandler &&h) {
+            return boost::asio::async_initiate<THandler, void(void)>(foo{}, h);
+        }
+
+    private:
+        class Impl;
+
+        using impl_ptr = std::shared_ptr<Impl>;
+
+        impl_ptr impl_;
+
+
+    private:
+
+        struct run_read {
+            template<typename THandler>
+            void operator()(THandler &&h, Connection *self, lock_type &lck) {
+                BOOST_ASIO_READ_HANDLER_CHECK(THandler, h) type_check;
+
+                using job_t = read_job<typename std::decay_t<THandler>>;
+
+            }
+        };
+
+    private:
+        struct job_base;
+        struct read_job_base;
         template<class T>
-        void operator()(T&& h) const
-        {
-            std::cout << "Hello from foo" << std::endl;
-            h();
-        }
+        struct read_job;
     };
 
-    template<class THandler>
-    BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(void)) asyncRead(THandler&& h)
-    {
-        return boost::asio::async_initiate<THandler, void(void)>(foo{}, h);
-    }
-
-private:
-    class Impl;
-    using impl_ptr = std::shared_ptr<Impl>;
-
-    impl_ptr impl_;
-
-
-private:
-
-    struct run_read
-    {
-        template<typename THandler>
-        void operator()(THandler&& h, Connection* self, lock_type& lck)
-        {
-            BOOST_ASIO_READ_HANDLER_CHECK(THandler, h) type_check;
-
-            using job_t = read_job<typename std::decay_t<THandler>>;
-
-        }
-    };
-
-private:
-    struct job_base;
-    struct read_job_base;
-    template<class T>
-    struct read_job;
-};
+}

@@ -4,15 +4,16 @@
 
 #include "Acceptor.h"
 
-#include "session/include/Session.h"
 #include "connection/include/Connection.h"
+
+#include <boost/asio/executor.hpp>
 
 namespace sdk {
 
 
 Acceptor::Acceptor(boost::asio::io_context &context, boost::asio::ip::tcp::endpoint endpoint) :
         context_(context),
-        acceptor_(boost::asio::make_strand(context_)),
+        acceptor_(context_),
         endpoint_(std::move(endpoint)),
         lg_("sdk", "Acceptor")
 {

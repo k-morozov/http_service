@@ -6,16 +6,18 @@
 
 #include "impl/Impl.h"
 
-Connection::Connection(boost::asio::ip::tcp::socket socket)
-{
-}
+namespace sdk {
 
-Connection::~Connection()
-{
 
-}
+    Connection::Connection(boost::asio::ip::tcp::socket socket) {
+    }
 
-Connection::executor_type Connection::get_executor()
-{
-    return impl_->get_executor();
+    Connection::~Connection() {
+
+    }
+
+    Connection::executor_type Connection::get_executor() {
+        return impl_->get_executor();
+    }
+
 }

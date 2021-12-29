@@ -36,7 +36,7 @@ public:
     ~Acceptor() override;
 
 private:
-    boost::asio::io_context &context_;
+    boost::asio::io_context& context_;
     boost::asio::ip::tcp::acceptor acceptor_;
     boost::asio::ip::tcp::endpoint endpoint_;
 

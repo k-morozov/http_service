@@ -8,19 +8,20 @@
 
 #include "job_base.h"
 
+namespace sdk {
+    struct Connection::read_job_base :
+            public job_base {
+    public:
+        explicit read_job_base(impl_ptr p);
 
-struct Connection::read_job_base :
-        public job_base
-{
-public:
-    explicit read_job_base(impl_ptr p);
-    ~read_job_base() override;
+        ~read_job_base() override;
 
-    void complete(lock_type& lck, error_code code, size_t bytes);
+        void complete(lock_type &lck, error_code code, size_t bytes);
 
-private:
-    virtual void complete_impl(error_code code, size_t bytes) = 0;
+    private:
+        virtual void complete_impl(error_code code, size_t bytes) = 0;
 
-private:
-    // message, buffers, e.t.c.
-};
+    private:
+        // message, buffers, e.t.c.
+    };
+}
