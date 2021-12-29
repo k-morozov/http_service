@@ -32,7 +32,7 @@ void Acceptor::prepare() {
 
 struct Bar
 {
-    void operator()()
+    void operator()(boost::system::error_code ec, size_t bytes)
     {
         std::cout << "Hello from bar!" << std::endl;
     }
@@ -62,7 +62,7 @@ void Acceptor::run() {
                 auto con = std::make_shared<Connection>(std::move(socket));
 
                 Bar b;
-                auto g = con->asyncRead(boost::asio::use_future);
+                con->asyncRead(b);
 
                 run();
             });
