@@ -4,15 +4,16 @@
 
 #include "Acceptor.h"
 
-#include "session/include/Session.h"
 #include "connection/include/Connection.h"
+
+#include <boost/asio/executor.hpp>
 
 namespace sdk {
 
 
 Acceptor::Acceptor(boost::asio::io_context &context, boost::asio::ip::tcp::endpoint endpoint) :
         context_(context),
-        acceptor_(boost::asio::make_strand(context_)),
+        acceptor_(context_),
         endpoint_(std::move(endpoint)),
         lg_("sdk", "Acceptor")
 {
@@ -29,6 +30,14 @@ void Acceptor::prepare() {
     lg_.info("start to listen");
 }
 
+struct Bar
+{
+    void operator()(boost::system::error_code ec, size_t bytes)
+    {
+        std::cout << "Hello from bar!" << std::endl;
+    }
+
+};
 void Acceptor::run() {
     lg_.info("wait accept");
     acceptor_.async_accept(
@@ -51,6 +60,9 @@ void Acceptor::run() {
 //                session->start();
 
                 auto con = std::make_shared<Connection>(std::move(socket));
+
+                Bar b;
+                con->asyncRead(b);
 
                 run();
             });

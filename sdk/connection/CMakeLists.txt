@@ -13,6 +13,11 @@ target_sources(${PROJECT_NAME} PRIVATE
 
     src/Connection.cpp
         src/impl/Impl.cpp
+        src/job/job_base.h
+        src/job/job_base.cpp
+        src/job/read_job_base.h
+        src/job/read_job_base.cpp
+        src/job/read_job.h
 )
 
 target_link_libraries(${PROJECT_NAME}

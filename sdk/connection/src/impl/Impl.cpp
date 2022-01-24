@@ -4,14 +4,21 @@
 
 #include "Impl.h"
 
-Connection::Impl::Impl(boost::asio::ip::tcp::socket socket) :
-    socket_(std::move(socket)),
-    lg_("sdk", "Connection")
-{
-    lg_.info("create");
-}
+namespace sdk {
+    Connection::Impl::Impl(socket_t socket) :
+            socket_(std::move(socket)),
+            lg_("sdk", "Connection")
+    {
+        lg_.info("create");
+    }
 
-Connection::Impl::~Impl()
-{
-    lg_.info("destroy");
+    Connection::Impl::~Impl()
+    {
+        lg_.info("destroy");
+    }
+
+    Connection::executor_type Connection::Impl::get_executor()
+    {
+        return socket_.get_executor();
+    }
 }
