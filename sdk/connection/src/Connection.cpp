@@ -51,18 +51,20 @@ void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
 }
 
 Connection::job_base::job_base(impl_ptr p) :
-        self_(std::move(p)) {
+        self_(std::move(p))
+{
 }
 
-const Connection::impl_ptr &Connection::job_base::self() const {
+const Connection::impl_ptr &Connection::job_base::self() const
+{
     return self_;
 }
 
 Connection::job_base::~job_base() = default;
 
 Connection::read_job_base::read_job_base(Connection::impl_ptr p)
-        : job_base(std::move(p)) {
-
+        : job_base(std::move(p))
+{
 }
 
 void Connection::read_job_base::complete(Connection::lock_type &lck, Connection::error_code ec, size_t bytes) {

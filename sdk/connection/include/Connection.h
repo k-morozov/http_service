@@ -72,7 +72,7 @@ private:
         job_base &operator=(job_base &&) = delete;
 
         [[nodiscard]]
-        impl_ptr const &self() const;
+        impl_ptr const& self() const;
 
     protected:
         impl_ptr self_;
@@ -95,7 +95,7 @@ private:
         virtual void complete_impl(error_code code, size_t bytes) = 0;
 
     private:
-        std::array<uint8_t, 8128> data_;
+        std::array<uint8_t, 8128> data_ = {0};
     };
 
 
