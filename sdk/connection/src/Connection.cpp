@@ -4,6 +4,8 @@
 
 #include <connection/include/Connection.h>
 
+#include <boost/asio.hpp>
+
 #include "impl/Impl.h"
 #include "job/read_job_base.h"
 
@@ -35,8 +37,22 @@ Connection::impl_ptr Connection::get_impl()
 
 void Connection::initiate_read(lock_type& lck, read_job_base* job)
 {
-//    error_code ec;
-    initiate_read_impl(lck, job);
+    error_code ec;
+    impl_->before_read_initiated(lck, ec);
+
+    if (!ec)
+    {
+        initiate_read_impl(lck, job);
+    }
+    else
+    {
+        boost::asio::post(get_executor(),
+                          [job, ec]()
+                          {
+                            lock_type stub; // @TODO fix stub
+                            job->complete(stub, ec, 0u);
+                          });
+    }
 }
 
 void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
