@@ -79,7 +79,7 @@ const Connection::impl_ptr &Connection::job_base::self() const
 Connection::job_base::~job_base() = default;
 
 Connection::read_job_base::read_job_base(Connection::impl_ptr p)
-        : job_base(std::move(p))
+    : job_base(std::move(p))
 {
 }
 

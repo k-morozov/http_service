@@ -26,6 +26,7 @@ class Connection
 {
 public:
     using protocol_t = boost::asio::ip::tcp;
+    using endpoint_t = typename protocol_t ::endpoint ;
     using error_code = boost::system::error_code;
 #if BOOST_VERSION >= 107400
         using executor_type = boost::asio::any_io_executor;
@@ -41,6 +42,9 @@ public:
 
     executor_type get_executor();
     mutex_type& mutex();
+
+    template<class THandler>
+    BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code)) asyncAccept(endpoint_t const& ep, THandler &&h);
 
     template<class THandler>
     BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t)) asyncRead(THandler &&h);
@@ -73,6 +77,20 @@ private:
         impl_ptr self_;
     };
 
+    struct accept_job_base : public job_base
+    {
+    public:
+        explicit accept_job_base(impl_ptr p,  endpoint_t const& ep);
+        ~accept_job_base() override;
+
+        [[nodiscard]]
+        endpoint_t const& get_endpoint() const { return ep_; }
+        void complete(lock_type&, error_code);
+    private:
+        endpoint_t ep_;
+
+        virtual void complete_impl(error_code) = 0;
+    };
 
     struct read_job_base : public job_base
     {
@@ -88,14 +106,13 @@ private:
         virtual void complete_impl(error_code code, size_t bytes) = 0;
     };
 
-
     template<class THandler>
     struct read_job final : public read_job_base
     {
         using handler_t = boost::beast::async_base<THandler, executor_type>;
     public:
         template<class U>
-        read_job(U &&h, Connection* self) :
+        read_job(U&& h, Connection* self) :
                 read_job_base(self->get_impl()),
                 handler_(std::forward<U>(h), self->get_executor())
         {}
@@ -104,7 +121,6 @@ private:
     private:
         handler_t handler_;
 
-    private:
         void complete_impl(error_code ec, size_t bytes) override
         {
             handler_.template complete_now(ec, bytes);
@@ -114,9 +130,8 @@ private:
     struct run_read
     {
         template<typename THandler>
-        void operator()(THandler &&h, Connection *self, lock_type &lck);
+        void operator()(THandler&& h, Connection *self, lock_type &lck);
     };
-
 
     void initiate_read(lock_type& lck, read_job_base* job);
     void initiate_read_impl(lock_type& lck, read_job_base* job);
@@ -124,14 +139,14 @@ private:
 
 
 template<class THandler>
-auto Connection::asyncRead(THandler &&h) -> BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t))
+auto Connection::asyncRead(THandler&& h) -> BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t))
 {
     lock_type lck(mutex());
     return boost::asio::async_initiate<THandler, void(error_code, size_t)>(run_read{}, h, this, lck);
 }
 
 template<typename THandler>
-void Connection::run_read::operator()(THandler &&h, Connection *self, lock_type &lck)
+void Connection::run_read::operator()(THandler&& h, Connection *self, lock_type &lck)
 {
     BOOST_ASIO_READ_HANDLER_CHECK(THandler, h) type_check;
 

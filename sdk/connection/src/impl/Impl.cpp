@@ -33,7 +33,7 @@ void Connection::Impl::before_read_initiated(lock_type& lck, error_code& ec)
     {
         // @TODO add new error type
         ec = boost::system::errc::make_error_code(boost::system::errc::timed_out);
-        lg_.error("Mutex should be lock");
+        lg_.error("Mutex should be lock for read");
     }
 }
 

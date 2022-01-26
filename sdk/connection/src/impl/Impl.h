@@ -24,6 +24,8 @@ public:
 
     executor_type get_executor();
 
+    socket_t& get_socket() { return socket_; }
+
     void before_read_initiated(lock_type& lck, error_code& ec);
 
 public:

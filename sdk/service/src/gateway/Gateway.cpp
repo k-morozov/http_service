@@ -3,73 +3,62 @@
 //
 
 #include <service/include/Gateway.h>
+#include <connection/include/Connection.h>
 
 #include <boost/asio/io_context.hpp>
-
-#include "acceptor/Acceptor.h"
 
 #include <unordered_set>
 
 
 namespace sdk {
 
-class Gateway::GatewayImpl final : public IService {
-public:
-
-    explicit GatewayImpl(std::unique_ptr<sdk::Acceptor> acceptor) :
-        acceptor_(std::move(acceptor)),
-        lg_("sdk", "Gateway")
-    {
-        if (!acceptor_)
-            throw std::bad_alloc();
-
-        lg_.info("create");
-    }
-
-    void prepare() override {
-        lg_.info("prepare");
-        acceptor_->prepare();
-    }
-
-    void run() override {
-        acceptor_->run();
-    }
-
-    void stop() override {
-        acceptor_->stop();
-    }
-
-    ~GatewayImpl() override {
-        lg_.info("destroy");
-    }
-
-private:
-    std::unique_ptr<sdk::Acceptor> acceptor_;
-    logger_t lg_;
-};
-
-Gateway::Gateway(std::unique_ptr<sdk::Acceptor> acceptor)
+Gateway::Gateway(boost::asio::io_context & io, protocol_t::endpoint ep) :
+    context_(io),
+    acceptor_(context_),
+    endpoint_(std::move(ep)),
+    lg_("sdk", "Gateway")
 {
-    impl_ = std::make_unique<GatewayImpl>(std::move(acceptor));
-    if (!impl_)
-        throw std::bad_alloc();
+    lg_.info("create");
 }
 
-void Gateway::prepare() {
-    impl_->prepare();
+void Gateway::prepare()
+{
+    error_code ec;
+    acceptor_.open(endpoint_.protocol(), ec);
+    acceptor_.set_option(protocol_t::acceptor::reuse_address(true));
+    acceptor_.bind(endpoint_, ec);
+
+    acceptor_.listen(2, ec);
+    lg_.info("start to listen");
 }
 
-void Gateway::run() {
-    impl_->run();
+void Gateway::run()
+{
+    lg_.info("wait accept");
+    acceptor_.async_accept(
+            [this](error_code ec, socket_t socket)
+            {
+                acceptHandler(ec, std::move(socket));
+//                run();
+            });
+}
+
+void Gateway::acceptHandler(error_code ec, socket_t socket)
+{
+    auto con = std::make_shared<Connection>(std::move(socket));
+    con->asyncRead(ReadCompleter{});
+    pool_.push_back(con);
 }
 
 void Gateway::stop() {
-    impl_->stop();
 }
 
-Gateway::~Gateway() {
-//    lg_.info("destroy");
+Gateway::~Gateway()
+{
+    acceptor_.cancel();
+    acceptor_.close();
+    lg_.info("destroy");
 }
 
 
-}
+} // namespace sdk

@@ -10,10 +10,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 target_sources(${PROJECT_NAME} PRIVATE
     include/IService.h
-        include/Gateway.h
-        src/gateway/Gateway.cpp
-        src/acceptor/Acceptor.h
-        src/acceptor/Acceptor.cpp
+    include/Gateway.h
+    src/gateway/Gateway.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

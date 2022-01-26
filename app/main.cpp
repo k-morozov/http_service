@@ -1,8 +1,6 @@
 #include <service/include/Gateway.h>
 #include <common/context/include/Context.h>
 
-#include <service/src/acceptor/Acceptor.h>
-
 #include "session/include/SessionPeerBase.h"
 
 int main() {
@@ -13,9 +11,7 @@ int main() {
     ba::ip::tcp::endpoint ep(ba::ip::make_address("127.0.0.1"),
                              8080);
 
-    auto acceptor = std::make_unique<sdk::Acceptor>(ctx.getContext(), std::move(ep));
-
-    sdk::Gateway service(std::move(acceptor));
+    sdk::Gateway service(ctx.getContext(), std::move(ep));
     service.prepare();
     service.run();
 
