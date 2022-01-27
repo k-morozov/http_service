@@ -62,6 +62,7 @@ void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
                                    {
                                         auto const& self = job->self();
                                         lock_type lck(self->mutex_);
+                                        std::cout << "msg: " << static_cast<const unsigned char*>(job->get_buffer().data()) << std::endl;
                                         job->complete(lck, ec, bytes);
                                    });
 }

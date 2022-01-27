@@ -51,15 +51,17 @@ private:
     struct transact_op_base
     {
         explicit transact_op_base(socket_t socket) :
-                connection_(std::move(socket))
-        {}
+                con_(std::make_unique<Connection>(std::move(socket)))
+        {
+            if (!con_)
+                throw std::invalid_argument("Failed create connection for transact op.");
+        }
         virtual ~transact_op_base() = default;
 
-        Connection& get_connection() { return connection_; }
-
         void complete();
-    private:
-        Connection connection_;
+
+    protected:
+        std::unique_ptr<Connection> con_;
 
         virtual void complete_impl() = 0;
     };
@@ -77,7 +79,7 @@ private:
         template<typename U>
         transact_op(U&& h, socket_t socket) :
             transact_op_base(std::move(socket)),
-            h_(std::forward<U>(h), get_connection().get_executor()),
+            h_(std::forward<U>(h), con_->get_executor()),
             lg_("http", "transact")
         {
             lg_.info("create");
@@ -89,7 +91,7 @@ private:
         {
             reenter(this)
             {
-                yield get_connection().template async_read(
+                yield con_->template async_read(
                             [this](error_code ec, size_t bytes)
                             {
                                 std::cout << "read completed: " << ec.message()
@@ -100,6 +102,7 @@ private:
 
             if (is_complete())
             {
+                lg_.info("coro complete.");
                 complete();
             }
         }
