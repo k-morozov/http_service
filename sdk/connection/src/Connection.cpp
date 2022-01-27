@@ -5,6 +5,8 @@
 #include <connection/include/Connection.h>
 
 #include <boost/asio.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
 
 #include "impl/Impl.h"
 #include "job/read_job_base.h"
@@ -57,14 +59,17 @@ void Connection::initiate_read(lock_type& lck, read_job_base* job)
 
 void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
 {
-    impl_->socket_.async_read_some(boost::asio::buffer(job->get_buffer()),
-                                   [job](error_code ec, size_t bytes)
-                                   {
-                                        auto const& self = job->self();
-                                        lock_type lck(self->mutex_);
-                                        std::cout << "msg: " << static_cast<const unsigned char*>(job->get_buffer().data()) << std::endl;
-                                        job->complete(lck, ec, bytes);
-                                   });
+    boost::beast::http::async_read(impl_->socket_,
+                             job->get_buffer(),
+                             req_,
+                             [this, job](error_code ec, size_t bytes)
+                             {
+                                  // check bytes
+                                  auto const& self = job->self();
+                                  lock_type lck(self->mutex_);
+                                  std::cout << "msg: " << req_ << std::endl;
+                                  job->complete(lck, ec, bytes);
+                             });
 }
 
 Connection::job_base::job_base(impl_ptr p) :

@@ -7,6 +7,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/beast/core/async_base.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
 
 #if BOOST_VERSION >= 107400
     #include <boost/asio/executor.hpp>
@@ -51,6 +53,8 @@ private:
     using impl_ptr = std::shared_ptr<Impl>;
     impl_ptr impl_;
 
+    boost::beast::http::request<boost::beast::http::string_body> req_;
+
 public:
     impl_ptr get_impl();
 
@@ -83,7 +87,7 @@ private:
         auto& get_buffer() noexcept { return data_; }
         void complete(lock_type &lck, error_code code, size_t bytes);
     private:
-        std::array<uint8_t, 8128> data_{};
+        boost::beast::flat_buffer data_{8128};
 
         virtual void complete_impl(error_code code, size_t bytes) = 0;
     };
