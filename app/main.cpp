@@ -12,7 +12,6 @@ int main() {
                              8080);
 
     sdk::Gateway service(ctx.getContext(), std::move(ep));
-    service.prepare();
     service.run();
 
     ctx.getContext().run();

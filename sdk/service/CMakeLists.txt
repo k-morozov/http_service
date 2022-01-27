@@ -12,6 +12,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     include/IService.h
     include/Gateway.h
     src/gateway/Gateway.cpp
+    src/core/Core.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
