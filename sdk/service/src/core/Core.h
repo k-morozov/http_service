@@ -79,16 +79,19 @@ private:
         {
             reenter(this)
             {
-                yield connection_.template asyncRead([this](error_code ec, size_t bytes)
-                {
-                    std::cout << "read completed: " << ec.message() << ", bytes=" << bytes << std::endl;
-//                    (*this)();
-                });
+                yield connection_.template async_read(
+                            [this](error_code ec, size_t bytes)
+                            {
+                                std::cout << "read completed: " << ec.message()
+                                          << ", bytes=" << bytes << std::endl;
+                                (*this)();
+                            });
             }
 
             if (is_complete())
             {
                 h_.template complete_now(error_code{});
+                delete this;
             }
         }
     };
@@ -99,7 +102,9 @@ private:
         void operator()(T&& h, Args&& ...args)
         {
             using type = typename std::decay_t<T>;
-            auto _ = transact_op<type>(std::forward<T>(h), std::forward<Args>(args)...);
+
+            [[maybe_unused]]
+            auto* _ = new transact_op<type>(std::forward<T>(h), std::forward<Args>(args)...);
         }
     };
 };

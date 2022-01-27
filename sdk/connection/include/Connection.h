@@ -44,10 +44,7 @@ public:
     mutex_type& mutex();
 
     template<class THandler>
-    BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code)) asyncAccept(endpoint_t const& ep, THandler &&h);
-
-    template<class THandler>
-    BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t)) asyncRead(THandler &&h);
+    BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t)) async_read(THandler &&h);
 
 private:
     class Impl;
@@ -139,7 +136,7 @@ private:
 
 
 template<class THandler>
-auto Connection::asyncRead(THandler&& h) -> BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t))
+auto Connection::async_read(THandler&& h) -> BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t))
 {
     lock_type lck(mutex());
     return boost::asio::async_initiate<THandler, void(error_code, size_t)>(run_read{}, h, this, lck);
