@@ -20,5 +20,10 @@ Core::~Core()
     lg_.info("destroy");
 }
 
+void Core::transact_op_base::complete()
+{
+    complete_impl();
+    delete this;
+}
 
 } // namespace sdk

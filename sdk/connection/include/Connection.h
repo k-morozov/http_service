@@ -74,21 +74,6 @@ private:
         impl_ptr self_;
     };
 
-    struct accept_job_base : public job_base
-    {
-    public:
-        explicit accept_job_base(impl_ptr p,  endpoint_t const& ep);
-        ~accept_job_base() override;
-
-        [[nodiscard]]
-        endpoint_t const& get_endpoint() const { return ep_; }
-        void complete(lock_type&, error_code);
-    private:
-        endpoint_t ep_;
-
-        virtual void complete_impl(error_code) = 0;
-    };
-
     struct read_job_base : public job_base
     {
     public:

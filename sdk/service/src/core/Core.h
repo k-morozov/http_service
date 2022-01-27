@@ -47,39 +47,49 @@ private:
     io_context& io_;
     logger_t lg_;
 
-    struct ReadFinished
+
+    struct transact_op_base
     {
-        void operator()(error_code ec)
-        {
-            std::cout << "transact completed: " << ec.message() << std::endl;
-        }
+        explicit transact_op_base(socket_t socket) :
+                connection_(std::move(socket))
+        {}
+        virtual ~transact_op_base() = default;
+
+        Connection& get_connection() { return connection_; }
+
+        void complete();
+    private:
+        Connection connection_;
+
+        virtual void complete_impl() = 0;
     };
 
     template<class T>
-    struct transact_op : private boost::asio::coroutine
+    struct transact_op :
+            public transact_op_base,
+            private boost::asio::coroutine
     {
         using handler_t = boost::beast::async_base<T, executor_type>;
 
-        Connection connection_;
         handler_t h_;
         logger_t lg_;
 
         template<typename U>
         transact_op(U&& h, socket_t socket) :
-            connection_(std::move(socket)),
-            h_(std::forward<U>(h), connection_.get_executor()),
+            transact_op_base(std::move(socket)),
+            h_(std::forward<U>(h), get_connection().get_executor()),
             lg_("http", "transact")
         {
             lg_.info("create");
             (*this)();
         }
-        ~transact_op() { lg_.info("destroy"); };
+        ~transact_op() override { lg_.info("destroy"); };
 
         void operator()()
         {
             reenter(this)
             {
-                yield connection_.template async_read(
+                yield get_connection().template async_read(
                             [this](error_code ec, size_t bytes)
                             {
                                 std::cout << "read completed: " << ec.message()
@@ -90,9 +100,13 @@ private:
 
             if (is_complete())
             {
-                h_.template complete_now(error_code{});
-                delete this;
+                complete();
             }
+        }
+
+        void complete_impl() override
+        {
+            h_.template complete_now(error_code{});
         }
     };
 
@@ -104,7 +118,7 @@ private:
             using type = typename std::decay_t<T>;
 
             [[maybe_unused]]
-            auto* _ = new transact_op<type>(std::forward<T>(h), std::forward<Args>(args)...);
+            auto _ = new transact_op<type>(std::forward<T>(h), std::forward<Args>(args)...);
         }
     };
 };
