@@ -98,6 +98,7 @@ private:
                                           << ", bytes=" << bytes << std::endl;
                                 (*this)();
                             });
+                std::cout << con_->request() << std::endl;
             }
 
             if (is_complete())

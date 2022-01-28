@@ -37,6 +37,8 @@ public:
 #endif
     using mutex_type = std::mutex;
     using lock_type = std::unique_lock<mutex_type>;
+    using string_body_t = boost::beast::http::string_body;
+    using request_t = boost::beast::http::request<string_body_t>;
 
 
     explicit Connection(protocol_t::socket socket);
@@ -44,6 +46,9 @@ public:
 
     executor_type get_executor();
     mutex_type& mutex();
+
+    [[nodiscard]]
+    request_t const& request() const { return req_; };
 
     template<class THandler>
     BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t)) async_read(THandler &&h);
@@ -53,7 +58,7 @@ private:
     using impl_ptr = std::shared_ptr<Impl>;
     impl_ptr impl_;
 
-    boost::beast::http::request<boost::beast::http::string_body> req_;
+    request_t req_;
 
 public:
     impl_ptr get_impl();

@@ -59,7 +59,9 @@ void Connection::initiate_read(lock_type& lck, read_job_base* job)
 
 void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
 {
-    boost::beast::http::async_read(impl_->socket_,
+    namespace http = boost::beast::http;
+
+    http::async_read(impl_->socket_,
                              job->get_buffer(),
                              req_,
                              [this, job](error_code ec, size_t bytes)
@@ -67,7 +69,6 @@ void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
                                   // check bytes
                                   auto const& self = job->self();
                                   lock_type lck(self->mutex_);
-                                  std::cout << "msg: " << req_ << std::endl;
                                   job->complete(lck, ec, bytes);
                              });
 }
