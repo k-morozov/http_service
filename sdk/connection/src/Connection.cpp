@@ -57,6 +57,26 @@ void Connection::initiate_read(lock_type& lck, read_job_base* job)
     }
 }
 
+void Connection::initiate_write(lock_type& lck, write_job_base* job)
+{
+    error_code ec;
+    impl_->before_write_initiated(lck, ec);
+
+    if (!ec)
+    {
+        initiate_write_impl(lck, job);
+    }
+    else
+    {
+        boost::asio::post(get_executor(),
+                          [job, ec]()
+                          {
+                              lock_type stub; // @TODO fix stub
+                              job->complete(stub, ec, 0u);
+                          });
+    }
+}
+
 void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
 {
     namespace http = boost::beast::http;
@@ -71,6 +91,21 @@ void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
                                   lock_type lck(self->mutex_);
                                   job->complete(lck, ec, bytes);
                              });
+}
+
+void Connection::initiate_write_impl(lock_type& lck, write_job_base* job)
+{
+    namespace http = boost::beast::http;
+
+    http::async_write(impl_->socket_,
+                     res_,
+                     [this, job](error_code ec, size_t bytes)
+                     {
+                         // check bytes
+                         auto const& self = job->self();
+                         lock_type lck(self->mutex_);
+                         job->complete(lck, ec, bytes);
+                     });
 }
 
 Connection::job_base::job_base(impl_ptr p) :
@@ -90,6 +125,11 @@ Connection::read_job_base::read_job_base(Connection::impl_ptr p)
 {
 }
 
+Connection::write_job_base::write_job_base(Connection::impl_ptr p)
+        : job_base(std::move(p))
+{
+}
+
 void Connection::read_job_base::complete(Connection::lock_type &lck, Connection::error_code ec, size_t bytes) {
     if (lck.owns_lock())
         lck.unlock();
@@ -98,7 +138,16 @@ void Connection::read_job_base::complete(Connection::lock_type &lck, Connection:
     delete this;
 }
 
+void Connection::write_job_base::complete(Connection::lock_type &lck, Connection::error_code ec, size_t bytes) {
+    if (lck.owns_lock())
+        lck.unlock();
+    complete_impl(ec, bytes);
+
+    delete this;
+}
+
 Connection::read_job_base::~read_job_base() = default;
+Connection::write_job_base::~write_job_base() = default;
 
 
 }

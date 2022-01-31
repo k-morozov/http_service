@@ -28,6 +28,8 @@ public:
 
     void before_read_initiated(lock_type& lck, error_code& ec);
 
+    void before_write_initiated(lock_type& lck, error_code& ec);
+
 public:
     socket_t socket_;
     logger_mt lg_;

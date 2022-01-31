@@ -37,4 +37,14 @@ void Connection::Impl::before_read_initiated(lock_type& lck, error_code& ec)
     }
 }
 
+void Connection::Impl::before_write_initiated(lock_type& lck, error_code& ec)
+{
+    if (!ec && !lck.owns_lock())
+    {
+        // @TODO add new error type
+        ec = boost::system::errc::make_error_code(boost::system::errc::timed_out);
+        lg_.error("Mutex should be lock for write");
+    }
+}
+
 }

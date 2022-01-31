@@ -109,6 +109,14 @@ private:
                                 (*this)();
                             });
                 Core::pipeline(self_, con_->request());
+                con_->set_response({});
+
+                yield con_->template async_write([this](error_code ec, size_t bytes)
+                                                 {
+                                                     lg_.template info_f("write completed: %1%, bytes=%2%",
+                                                                         ec.message(), bytes);
+                                                     (*this)();
+                                                 });
             }
 
             if (is_complete())
