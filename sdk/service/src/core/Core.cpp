@@ -26,4 +26,9 @@ void Core::transact_op_base::complete()
     delete this;
 }
 
+void Core::pipeline(Core* self, Connection::request_t request)
+{
+    std::cout << "Pipeline: " << request << std::endl;
+}
+
 } // namespace sdk

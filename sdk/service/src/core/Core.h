@@ -41,11 +41,14 @@ public:
     io_context& get_context() { return io_; }
 
     template<typename THandler>
-    BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code)) async_transact(socket_t socket, THandler &&h);
+    BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code)) async_transact(socket_t socket, THandler&& h);
+
+    static void pipeline(Core* self, Connection::request_t request);
 
 private:
     io_context& io_;
     logger_t lg_;
+    // request_pipeline_
 
 
     struct transact_op_base
@@ -67,18 +70,20 @@ private:
     };
 
     template<class T>
-    struct transact_op :
+    struct transact_op final:
             public transact_op_base,
             private boost::asio::coroutine
     {
         using handler_t = boost::beast::async_base<T, executor_type>;
 
+        Core* self_;
         handler_t h_;
         logger_t lg_;
 
         template<typename U>
-        transact_op(U&& h, socket_t socket) :
+        transact_op(U&& h, Core* self, socket_t socket) :
             transact_op_base(std::move(socket)),
+            self_(self),
             h_(std::forward<U>(h), con_->get_executor()),
             lg_("http", "transact")
         {
@@ -94,11 +99,11 @@ private:
                 yield con_->template async_read(
                             [this](error_code ec, size_t bytes)
                             {
-                                std::cout << "read completed: " << ec.message()
-                                          << ", bytes=" << bytes << std::endl;
+                                lg_.template info_f("read completed: %1%, bytes=%2%",
+                                        ec.message(), bytes);
                                 (*this)();
                             });
-                std::cout << con_->request() << std::endl;
+                Core::pipeline(self_, con_->request());
             }
 
             if (is_complete())
@@ -125,13 +130,14 @@ private:
             auto _ = new transact_op<type>(std::forward<T>(h), std::forward<Args>(args)...);
         }
     };
+
 };
 
 
 template<typename THandler>
 auto Core::async_transact(socket_t socket, THandler &&h) ->BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code))
 {
-    return boost::asio::async_initiate<THandler, void(error_code)>(run_transact{}, h, std::move(socket));
+    return boost::asio::async_initiate<THandler, void(error_code)>(run_transact{}, h, this, std::move(socket));
 };
 
 } // namespace sdk

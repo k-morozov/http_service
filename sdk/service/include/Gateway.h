@@ -66,10 +66,14 @@ private:
 
     struct TransactFinished
     {
+        explicit TransactFinished(logger_t& lg) :
+            lg_(lg)
+        {};
         void operator()(error_code ec)
         {
-            std::cout << "transact completed: " << ec.message() << std::endl;
+            lg_.info_f("transact completed: %1%", ec.message());
         }
+        logger_t& lg_;
     };
 };
 

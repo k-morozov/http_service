@@ -62,8 +62,7 @@ void Gateway::run()
                     lg_.info_f("accept completed, ec=%1%, message=%2%", ec, ec.message());
                     if (!ec)
                     {
-                        lg_.info("transact started.");
-                        core_->async_transact(std::move(socket), TransactFinished{});
+                        core_->async_transact(std::move(socket), TransactFinished{lg_});
                     }
                     run();
                 });

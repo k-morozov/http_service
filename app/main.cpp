@@ -11,7 +11,7 @@ int main() {
     ba::ip::tcp::endpoint ep(ba::ip::make_address("127.0.0.1"),
                              8080);
 
-    sdk::Gateway service(ctx.getContext(), std::move(ep));
+    sdk::Gateway service(ctx.getContext(), ep);
     service.run();
 
     ctx.getContext().run();

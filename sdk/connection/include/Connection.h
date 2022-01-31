@@ -48,7 +48,11 @@ public:
     mutex_type& mutex();
 
     [[nodiscard]]
-    request_t const& request() const { return req_; };
+    request_t const& request() const
+    {
+        // @TODO add parse?
+        return req_;
+    };
 
     template<class THandler>
     BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code, size_t)) async_read(THandler &&h);
@@ -58,6 +62,7 @@ private:
     using impl_ptr = std::shared_ptr<Impl>;
     impl_ptr impl_;
 
+    // @TODO state - init, read, pending, write, complete
     request_t req_;
 
 public:
