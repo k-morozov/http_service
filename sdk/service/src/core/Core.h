@@ -33,6 +33,8 @@ public:
 #else
     using executor_type = boost::asio::executor;
 #endif
+    using request_action = std::function<error_code (Connection::request_t const&)>;
+    using request_pipeline_t = std::vector<request_action>;
 
 
     explicit Core(io_context & io);
@@ -45,10 +47,13 @@ public:
 
     static void pipeline(Core* self, Connection::request_t request);
 
+    void add_request_action(request_action);
+
 private:
     io_context& io_;
     logger_t lg_;
-    // request_pipeline_
+
+    request_pipeline_t request_pipeline_;
 
 
     struct transact_op_base

@@ -28,7 +28,18 @@ void Core::transact_op_base::complete()
 
 void Core::pipeline(Core* self, Connection::request_t request)
 {
-    std::cout << "Pipeline: " << request << std::endl;
+    for(auto const& action : self->request_pipeline_)
+    {
+        if (!action)
+            break;
+        action(request);
+    }
+}
+
+void Core::add_request_action(request_action action)
+{
+    // @TODO sync?
+    request_pipeline_.push_back(std::move(action));
 }
 
 } // namespace sdk
