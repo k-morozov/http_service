@@ -1,7 +1,6 @@
 #include <service/include/Gateway.h>
 #include <common/context/include/Context.h>
 
-#include "session/include/SessionPeerBase.h"
 
 int main() {
     logger_t lg("sdk", "main");
