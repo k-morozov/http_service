@@ -8,6 +8,7 @@
 #include "IService.h"
 
 #include <common/logger/Logger.h>
+#include <service/src/core/Core.h>
 
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -26,44 +27,53 @@ namespace sdk {
 
 class Connection;
 
+using core_ptr = std::unique_ptr<Core>;
+
 class Gateway final : public IService {
 public:
     using error_code = boost::system::error_code;
     using protocol_t = boost::asio::ip::tcp;
     using socket_t = protocol_t::socket;
+    using acceptor_t = protocol_t::acceptor;
+    using endpoint_t = protocol_t::endpoint;
 
-    explicit Gateway(boost::asio::io_context & io, protocol_t::endpoint ep);
+    explicit Gateway(boost::asio::io_context & io, endpoint_t const& ep);
 
+    [[deprecated]]
     void prepare() override;
 
     void run() override;
 
     void stop() override;
 
-    ~Gateway() override;
+    ~Gateway() override
+    {
+        acceptor_->cancel();
+        acceptor_->close();
+        acceptor_.reset();
+
+        lg_.info("destroy");
+    }
 
 private:
-    boost::asio::io_context& context_;
-    protocol_t::acceptor acceptor_;
-    protocol_t::endpoint endpoint_;
-
+    core_ptr core_;
+    std::unique_ptr<acceptor_t> acceptor_;
     logger_t lg_;
 
+    boost::asio::coroutine coro_;
     std::vector<std::shared_ptr<Connection>> pool_;
 
 
-    void acceptHandler(error_code ec, socket_t socket);
-
-
-    struct ReadCompleter
+    struct TransactFinished
     {
-//        explicit ReadCompleter() = default;
-        void operator()(boost::system::error_code ec, size_t bytes)
+        explicit TransactFinished(logger_t& lg) :
+            lg_(lg)
+        {};
+        void operator()(error_code ec)
         {
-            std::cout << "read_job: " << ec.message() << ", bytes=" << bytes << std::endl;
+            lg_.info_f("transact completed: %1%", ec.message());
         }
-    private:
-
+        logger_t& lg_;
     };
 };
 
