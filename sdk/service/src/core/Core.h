@@ -17,6 +17,8 @@
     #include <boost/asio/any_io_executor.hpp>
 #endif
 
+#include <shared_mutex>
+
 
 namespace sdk {
 
@@ -35,6 +37,9 @@ public:
 #endif
     using request_action = std::function<error_code (Connection::request_t const&)>;
     using request_pipeline_t = std::vector<request_action>;
+    using mutex_type = std::shared_mutex;
+    using lock_read_type = std::shared_lock<mutex_type>;
+    using lock_write_type = std::unique_lock<mutex_type>;
 
 
     explicit Core(io_context & io);
@@ -45,13 +50,14 @@ public:
     template<typename THandler>
     BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code)) async_transact(socket_t socket, THandler&& h);
 
-    static void pipeline(Core* self, Connection::request_t request);
+    static void pipeline(Core* self, Connection::request_t const& request);
 
     void add_request_action(request_action);
 
 private:
     io_context& io_;
     logger_t lg_;
+    mutex_type m_;
 
     request_pipeline_t request_pipeline_;
 
@@ -148,7 +154,7 @@ private:
 
 
 template<typename THandler>
-auto Core::async_transact(socket_t socket, THandler &&h) ->BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code))
+auto Core::async_transact(socket_t socket, THandler&& h) -> BOOST_ASIO_INITFN_RESULT_TYPE(THandler, void(error_code))
 {
     return boost::asio::async_initiate<THandler, void(error_code)>(run_transact{}, h, this, std::move(socket));
 };

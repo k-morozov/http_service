@@ -26,19 +26,38 @@ void Core::transact_op_base::complete()
     delete this;
 }
 
-void Core::pipeline(Core* self, Connection::request_t request)
+void Core::pipeline(Core* self, Connection::request_t const& request)
 {
+    if (!self)
+        return;
+
+    lock_read_type lck(self->m_);
+
     for(auto const& action : self->request_pipeline_)
     {
-        if (!action)
-            break;
-        action(request);
+        try {
+            if (!action)
+            {
+                self->lg_.warning("broken action in pipeline");
+                continue;
+            }
+            auto ec = action(request);
+            if (ec)
+            {
+                self->lg_.error_f("pipeline failed by error: ec=%1%, message=%2%", ec, ec.message());
+                break;
+            }
+        } catch (std::exception const& ex)
+        {
+            self->lg_.error_f("pipeline failed by except: %1%", ex.what());
+        }
+
     }
 }
 
 void Core::add_request_action(request_action action)
 {
-    // @TODO sync?
+    lock_write_type lck(m_);
     request_pipeline_.push_back(std::move(action));
 }
 

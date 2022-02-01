@@ -126,11 +126,8 @@ private:
         explicit write_job_base(impl_ptr p);
         ~write_job_base() override;
 
-//        auto& get_buffer() noexcept { return data_; }
         void complete(lock_type &lck, error_code code, size_t bytes);
     private:
-//        boost::beast::flat_buffer data_{8128};
-
         virtual void complete_impl(error_code code, size_t bytes) = 0;
     };
 

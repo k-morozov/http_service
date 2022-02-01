@@ -6,6 +6,7 @@ int main() {
     logger_t lg("sdk", "main");
 
     namespace ba = boost::asio;
+
     Context ctx;
     ba::ip::tcp::endpoint ep(ba::ip::make_address("127.0.0.1"),
                              8080);

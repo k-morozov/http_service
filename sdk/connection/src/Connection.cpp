@@ -84,7 +84,7 @@ void Connection::initiate_read_impl(lock_type& lck, read_job_base* job)
     http::async_read(impl_->socket_,
                              job->get_buffer(),
                              req_,
-                             [this, job](error_code ec, size_t bytes)
+                             [job](error_code ec, size_t bytes)
                              {
                                   // check bytes
                                   auto const& self = job->self();
@@ -99,7 +99,7 @@ void Connection::initiate_write_impl(lock_type& lck, write_job_base* job)
 
     http::async_write(impl_->socket_,
                      res_,
-                     [this, job](error_code ec, size_t bytes)
+                     [job](error_code ec, size_t bytes)
                      {
                          // check bytes
                          auto const& self = job->self();
