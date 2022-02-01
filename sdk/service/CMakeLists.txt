@@ -19,6 +19,7 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         ${CONAN_LIBS_BOOST}
         mlogger
+        pipeline
 )
 
 #target_precompile_headers(mlogger INTERFACE pch/pch.h)

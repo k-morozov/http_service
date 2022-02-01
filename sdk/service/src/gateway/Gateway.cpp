@@ -21,11 +21,6 @@ Gateway::Gateway(boost::asio::io_context & io, endpoint_t const& ep) :
     if (!core_)
         throw std::invalid_argument("failed create core");
 
-    // @TODO pipeline in new class?
-    auto print = [](Connection::request_t const& req) -> Core::error_code
-            { std::cout << req << std::endl; return {}; };
-    core_->add_request_action(std::move(print));
-
     acceptor_ = std::make_unique<acceptor_t>(core_->get_context());
     if (!acceptor_)
         throw std::invalid_argument("failed create acceptor");
@@ -45,11 +40,6 @@ Gateway::Gateway(boost::asio::io_context & io, endpoint_t const& ep) :
         throw std::invalid_argument("failed listen to endpoint");
 
     lg_.info("create");
-}
-
-void Gateway::prepare()
-{
-
 }
 
 void Gateway::run()

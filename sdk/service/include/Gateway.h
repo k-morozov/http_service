@@ -39,8 +39,10 @@ public:
 
     explicit Gateway(boost::asio::io_context & io, endpoint_t const& ep);
 
-    [[deprecated]]
-    void prepare() override;
+    void setup_pipeline(PipelinePtr&& pipeline)
+    {
+        core_->setup_pipeline(std::move(pipeline));
+    }
 
     void run() override;
 
