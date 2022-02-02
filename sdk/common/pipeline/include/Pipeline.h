@@ -5,6 +5,7 @@
 #pragma once
 
 #include <common/logger/Logger.h>
+#include <common/cancel_controller/include/Controller.h>
 
 #include <boost/beast.hpp>
 
@@ -31,16 +32,20 @@ public:
 
 
     Pipeline();
-    ~Pipeline() = default;
+    ~Pipeline();
 
     void run(request_t message);
 
     void append_handler(request_handler_t h);
 
+    ControllerPtr get_controller();
+
 private:
     logger_t lg_;
     std::vector<request_handler_t> request_pipeline_;
     mutex_type m_;
+
+    ControllerPtr controller_;
 };
 
 

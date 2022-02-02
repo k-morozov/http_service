@@ -7,9 +7,17 @@
 namespace sdk {
 
 
-Pipeline::Pipeline() : lg_("sdk", "pipeline")
+Pipeline::Pipeline() :
+    controller_(Controller::create()),
+    lg_("sdk", "pipeline")
 {
+    controller_->start_work();
     lg_.info("create");
+}
+
+Pipeline::~Pipeline()
+{
+    controller_->end_work();
 }
 
 
@@ -21,6 +29,12 @@ void Pipeline::run(request_t const message)
     for(auto const& action : request_pipeline_)
     {
         try {
+            if (controller_->is_cancel())
+            {
+                lg_.warning("cancel from controller");
+                break;
+            }
+
             if (!action)
             {
                 lg_.warning("broken action");
@@ -36,7 +50,6 @@ void Pipeline::run(request_t const message)
         {
             lg_.error_f("failed by except: %1%", ex.what());
         }
-
     }
 }
 
@@ -46,6 +59,11 @@ void Pipeline::append_handler(request_handler_t action)
     unique_lock_t lck(m_);
 
     request_pipeline_.push_back(std::move(action));
+}
+
+ControllerPtr Pipeline::get_controller()
+{
+    return controller_;
 }
 
 

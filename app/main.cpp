@@ -20,6 +20,9 @@ int main() {
         { std::cout << req << std::endl; return {}; };
     pipeline->append_handler(std::move(print));
 
+    auto controller = pipeline->get_controller();
+    controller->subscribe([](){ std::cout << "have signal by cancel" << std::endl; });
+
     service.setup_pipeline(std::move(pipeline));
     service.run();
 
