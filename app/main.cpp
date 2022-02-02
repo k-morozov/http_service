@@ -1,6 +1,6 @@
 #include <service/include/Gateway.h>
 #include <common/context/include/Context.h>
-
+#include <common/pipeline/include/Pipeline.h>
 
 int main() {
     logger_t lg("sdk", "main");
@@ -12,9 +12,17 @@ int main() {
                              8080);
 
     sdk::Gateway service(ctx.getContext(), ep);
+
+    auto pipeline = std::make_unique<sdk::Pipeline>();
+
+    auto print = [](sdk::Pipeline::request_t const& req)
+            -> sdk::Pipeline::error_code
+        { std::cout << req << std::endl; return {}; };
+    pipeline->append_handler(std::move(print));
+
+    service.setup_pipeline(std::move(pipeline));
     service.run();
 
     ctx.getContext().run();
-
     return 0;
 }

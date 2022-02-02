@@ -6,6 +6,7 @@
 
 #include <connection/include/Connection.h>
 #include <common/logger/Logger.h>
+#include <common/pipeline/include/Pipeline.h>
 
 #include <boost/asio.hpp>
 #include <boost/beast/core/async_base.hpp>
@@ -52,14 +53,14 @@ public:
 
     static void pipeline(Core* self, Connection::request_t const& request);
 
-    void add_request_action(request_action);
+    void setup_pipeline(PipelinePtr);
 
 private:
     io_context& io_;
     logger_t lg_;
     mutex_type m_;
 
-    request_pipeline_t request_pipeline_;
+    PipelinePtr request_pipeline_;
 
 
     struct transact_op_base
