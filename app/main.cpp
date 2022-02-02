@@ -15,8 +15,8 @@ int main() {
 
     auto pipeline = std::make_unique<sdk::Pipeline>();
 
-    auto print = [](sdk::Connection::request_t const& req)
-            -> sdk::Core::error_code
+    auto print = [](sdk::Pipeline::request_t const& req)
+            -> sdk::Pipeline::error_code
         { std::cout << req << std::endl; return {}; };
     pipeline->append_handler(std::move(print));
 

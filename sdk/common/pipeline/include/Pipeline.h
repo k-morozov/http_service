@@ -18,14 +18,16 @@ using PipelinePtr = std::unique_ptr<Pipeline>;
 
 
 class Pipeline {
+
+
 public:
     using body_t = boost::beast::http::string_body;
     using request_t = boost::beast::http::request<body_t>;
     using error_code = boost::system::error_code;
     using request_handler_t = std::function<error_code (request_t)>;
     using mutex_type = std::shared_mutex;
-    using lock_read_type = std::shared_lock<mutex_type>;
-    using lock_write_type = std::unique_lock<mutex_type>;
+    using shared_lock_t = std::shared_lock<mutex_type>;
+    using unique_lock_t = std::unique_lock<mutex_type>;
 
 
     Pipeline();

@@ -13,10 +13,10 @@ Pipeline::Pipeline() : lg_("sdk", "pipeline")
 }
 
 
-void Pipeline::run(request_t message)
+void Pipeline::run(request_t const message)
 {
     [[maybe_unused]]
-    lock_read_type lck(m_);
+    shared_lock_t lck(m_);
 
     for(auto const& action : request_pipeline_)
     {
@@ -26,7 +26,7 @@ void Pipeline::run(request_t message)
                 lg_.warning("broken action");
                 continue;
             }
-            auto ec = action(std::move(message));
+            auto ec = action(message);
             if (ec)
             {
                 lg_.error_f("failed by error: ec=%1%, message=%2%", ec, ec.message());
@@ -43,7 +43,7 @@ void Pipeline::run(request_t message)
 void Pipeline::append_handler(request_handler_t action)
 {
     [[maybe_unused]]
-    lock_write_type lck(m_);
+    unique_lock_t lck(m_);
 
     request_pipeline_.push_back(std::move(action));
 }
