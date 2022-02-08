@@ -35,8 +35,6 @@ int main() {
     for(int i=0; i<5; ++i)
         pipeline->append_handler(print);
 
-
-
     service.setup_pipeline(std::move(pipeline));
     service.run();
 

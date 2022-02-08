@@ -18,11 +18,19 @@ Pipeline::Pipeline() :
 Pipeline::~Pipeline()
 {
     controller_->end_work();
+    lg_.info("wait running job");
+    controller_->wait();
+    lg_.info("destroy");
 }
-
 
 void Pipeline::run(request_t const message)
 {
+    if (controller_->is_cancel())
+    {
+        lg_.warning("cancel from controller. finished run.");
+        return;
+    }
+
     [[maybe_unused]]
     shared_lock_t lck(m_);
 
@@ -31,7 +39,7 @@ void Pipeline::run(request_t const message)
         try {
             if (controller_->is_cancel())
             {
-                lg_.warning("cancel from controller");
+                lg_.warning("cancel from controller. close pipelines.");
                 break;
             }
 

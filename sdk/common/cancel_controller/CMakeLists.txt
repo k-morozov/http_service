@@ -11,6 +11,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_sources(${PROJECT_NAME}
     PUBLIC
         src/Controller.cpp
+        src/stop_state_registry.cpp
+        src/stop_state_impl.cpp
 )
 
 include_directories(SYSTEM ${CONAN_INCLUDE_DIRS})
