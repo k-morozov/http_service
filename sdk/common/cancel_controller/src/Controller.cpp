@@ -57,14 +57,14 @@ void Controller::wait()
 {
     lock_t lck(m_);
 
-    while (work_)
+    while (work_ || count_process_.load()>0)
     {
         cv_.wait(lck, [this]() -> bool
         {
-            return !work_ && 0 == count_process_;
+            return !work_ || 0 == count_process_.load();
         });
-        if (!work_ && 0 == count_process_)
-            break;
+//        if (!work_ && 0 == count_process_)
+//            break;
     }
 
 }

@@ -58,7 +58,7 @@ private:
     bool resume_ = false;
     bool work_ = false;
 
-    std::atomic_uint  count_process_ = 0;
+    std::atomic_uint count_process_ = 0;
 
 private:
     void emit_signal();
@@ -69,9 +69,13 @@ private:
 template<class F, class ...Args>
 void Controller::process(F&& f, Args&& ... args)
 {
+    if (!work_ || cancel_)
+        return;
+
     count_process_++;
     f(std::forward<Args>(args)...);
     count_process_--;
+    cv_.notify_one();
 }
 
 } // namespace sdk
