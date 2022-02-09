@@ -16,7 +16,7 @@ int main() {
     auto pipeline = std::make_unique<sdk::Pipeline>();
 
     auto controller = pipeline->get_controller();
-    controller->subscribe([](){ std::cout << "have signal by cancel" << std::endl; });
+    controller->subscribe([&lg](){ lg.info("have signal by cancel"); });
 
     auto print = [controller](sdk::Pipeline::request_t const& req)
             -> sdk::Pipeline::error_code
