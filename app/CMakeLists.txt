@@ -11,4 +11,5 @@ target_link_libraries(analytics
         context
         connection
         pipeline
+        cancel_controller
 )
