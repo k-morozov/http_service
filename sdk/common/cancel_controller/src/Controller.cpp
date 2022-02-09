@@ -61,9 +61,9 @@ void Controller::wait()
     {
         cv_.wait(lck, [this]() -> bool
         {
-            return !work_;
+            return !work_ && 0 == count_process_;
         });
-        if (!work_)
+        if (!work_ && 0 == count_process_)
             break;
     }
 

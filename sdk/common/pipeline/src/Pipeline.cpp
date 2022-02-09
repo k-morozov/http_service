@@ -23,7 +23,7 @@ Pipeline::~Pipeline()
     lg_.info("destroy");
 }
 
-void Pipeline::run(request_t const message)
+void Pipeline::run(request_t message)
 {
     if (controller_->is_cancel())
     {
@@ -31,6 +31,11 @@ void Pipeline::run(request_t const message)
         return;
     }
 
+    controller_->process([this](request_t m) { run_impl(std::move(m));}, message);
+}
+
+void Pipeline::run_impl(request_t message)
+{
     [[maybe_unused]]
     shared_lock_t lck(m_);
 
@@ -39,7 +44,7 @@ void Pipeline::run(request_t const message)
         try {
             if (controller_->is_cancel())
             {
-                lg_.warning("cancel from controller. close pipelines.");
+                lg_.warning("cancel from controller. close current actions.");
                 break;
             }
 

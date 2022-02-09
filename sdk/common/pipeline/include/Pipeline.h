@@ -46,6 +46,9 @@ private:
     mutex_type m_;
 
     ControllerPtr controller_;
+
+private:
+    void run_impl(request_t message);
 };
 
 

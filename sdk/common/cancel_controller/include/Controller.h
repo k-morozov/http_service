@@ -43,6 +43,9 @@ public:
 
     void wait();
 
+    template<class F, class ...Args>
+    void process(F&& f, Args&& ... args);
+
 private:
     finish_signal_t handler_;
 
@@ -55,11 +58,20 @@ private:
     bool resume_ = false;
     bool work_ = false;
 
+    std::atomic_uint  count_process_ = 0;
 
 private:
     void emit_signal();
 
 };
 
+
+template<class F, class ...Args>
+void Controller::process(F&& f, Args&& ... args)
+{
+    count_process_++;
+    f(std::forward<Args>(args)...);
+    count_process_--;
+}
 
 } // namespace sdk
