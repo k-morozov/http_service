@@ -35,10 +35,6 @@ public:
 
     bool is_cancel() const;
 
-    void start_work();
-
-    void end_work();
-
     void cancel();
 
     void wait();
@@ -52,11 +48,11 @@ private:
     mutable mutex_t m_;
     std::condition_variable cv_;
 
+    std::atomic_bool cancel_ = false;
+
     // @TODO change to atomic?
-    bool cancel_ = false;
     bool pause_ = false;
     bool resume_ = false;
-    bool work_ = false;
 
     std::atomic_uint count_process_ = 0;
 
@@ -69,9 +65,6 @@ private:
 template<class F, class ...Args>
 void Controller::process(F&& f, Args&& ... args)
 {
-    if (!work_ || cancel_)
-        return;
-
     count_process_++;
     f(std::forward<Args>(args)...);
     count_process_--;

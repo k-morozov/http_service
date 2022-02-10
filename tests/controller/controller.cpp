@@ -79,15 +79,9 @@ TEST_F(SuiteController, simpleCallHandlerInThreads)
     EXPECT_EQ(counter.load(), COUNT_THREADS);
 }
 
-TEST_F(SuiteController, simpleWait) {
+TEST_F(SuiteController, DISABLED_simpleWaitWithEndWork) {
     ASSERT_TRUE(controller_);
-
-    auto f = [] {};
-
-    controller_->subscribe(std::move(f));
     EXPECT_FALSE(controller_->is_cancel());
-
-    controller_->start_work();
 
     constexpr size_t COUNT_THREADS = 100;
     std::array<std::unique_ptr<future_t>, COUNT_THREADS> data;
@@ -111,7 +105,45 @@ TEST_F(SuiteController, simpleWait) {
         ASSERT_TRUE(p);
     }
 
-    controller_->end_work();
+    controller_->wait();
+
+    EXPECT_EQ(counter.load(), 0);
+
+    std::for_each(std::execution::par_unseq, data.begin(), data.end(), [](auto&& p)
+    {
+        ASSERT_NO_THROW(p->get());
+    });
+}
+
+TEST_F(SuiteController, simpleWaitWithCancel) {
+    ASSERT_TRUE(controller_);
+    EXPECT_FALSE(controller_->is_cancel());
+
+    constexpr size_t COUNT_THREADS = 100;
+    std::array<std::unique_ptr<future_t>, COUNT_THREADS> data;
+
+    auto job = []()
+    {
+        std::this_thread::sleep_for(2s);
+    };
+
+    std::atomic_uint counter = COUNT_THREADS;
+
+    for(auto& p : data)
+    {
+        p = std::make_unique<future_t>(std::async(std::launch::async,
+                                                  [c = controller_, job, &counter]
+                                                  {
+                                                      c->process(job);
+                                                      counter--;
+                                                  }
+        ));
+        ASSERT_TRUE(p);
+    }
+
+    controller_->cancel();
+    ASSERT_TRUE(controller_->is_cancel());
+
     controller_->wait();
 
     EXPECT_EQ(counter.load(), 0);
