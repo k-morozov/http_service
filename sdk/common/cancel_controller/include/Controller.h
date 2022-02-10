@@ -65,6 +65,9 @@ private:
 template<class F, class ...Args>
 void Controller::process(F&& f, Args&& ... args)
 {
+    if (cancel_.load())
+        return;
+
     count_process_++;
     f(std::forward<Args>(args)...);
     count_process_--;
