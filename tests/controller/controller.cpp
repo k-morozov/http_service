@@ -14,16 +14,26 @@ using namespace std::chrono_literals;
 using future_t = std::future<void>;
 
 
-class TestContext : public ::testing::Test
+class SuiteController : public ::testing::Test
 {
 public:
-    TestContext() = default;
+    SuiteController() = default;
+
+protected:
+    void SetUp() override {
+        controller_ = sdk::Controller::create();
+    }
+    
+    void TearDown() override {
+        controller_.reset();
+    }
+
+    sdk::ControllerPtr controller_;
 };
 
-TEST_F(TestContext, simpleCallHandler)
+TEST_F(SuiteController, simpleCallHandler)
 {
-    auto controller_ = sdk::Controller::create();
-    ASSERT_TRUE(controller_);
+    ASSERT_TRUE(controller_) << "Failed allocate for controller";
 
     bool flag = false;
     auto f = [&flag]{ flag = true; };
@@ -38,9 +48,8 @@ TEST_F(TestContext, simpleCallHandler)
     EXPECT_TRUE(flag);
 }
 
-TEST_F(TestContext, simpleCallHandlerInThreads)
+TEST_F(SuiteController, simpleCallHandlerInThreads)
 {
-    auto controller_ = sdk::Controller::create();
     ASSERT_TRUE(controller_);
 
     std::atomic_uint counter = 0;
@@ -56,7 +65,7 @@ TEST_F(TestContext, simpleCallHandlerInThreads)
     for(auto& p : data)
     {
         p = std::make_unique<future_t>(std::async(std::launch::async,
-                                                            [&controller_]{controller_->cancel();}
+                                                            [c = controller_]{c->cancel();}
                                                             ));
         ASSERT_TRUE(p);
     }
@@ -70,8 +79,7 @@ TEST_F(TestContext, simpleCallHandlerInThreads)
     EXPECT_EQ(counter.load(), COUNT_THREADS);
 }
 
-TEST_F(TestContext, simpleWait) {
-    auto controller_ = sdk::Controller::create();
+TEST_F(SuiteController, simpleWait) {
     ASSERT_TRUE(controller_);
 
     auto f = [] {};
@@ -94,9 +102,9 @@ TEST_F(TestContext, simpleWait) {
     for(auto& p : data)
     {
         p = std::make_unique<future_t>(std::async(std::launch::async,
-                                                  [&controller_, job, &counter]
+                                                  [c = controller_, job, &counter]
         {
-            controller_->process(job);
+            c->process(job);
             counter--;
         }
         ));
