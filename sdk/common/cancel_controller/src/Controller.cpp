@@ -8,37 +8,18 @@
 namespace sdk {
 
 
-Controller::~Controller()
-{
-    lock_t lck(m_);
-    work_ = false;
-    cv_.notify_all();
-}
+Controller::~Controller() = default;
 
 void Controller::subscribe(finished_t handler)
 {
     lock_t lck(m_);
+    // @TODO thread safe?
     handler_.connect(handler);
 }
 
 bool Controller::is_cancel() const
 {
-    lock_t lck(m_);
-    return cancel_;
-}
-
-void Controller::start_work()
-{
-    lock_t lck(m_);
-    work_ = true;
-}
-
-void Controller::end_work()
-{
-    lock_t lck(m_);
-    work_ = false;
-    emit_signal();
-    cv_.notify_all();
+    return cancel_.load();
 }
 
 void Controller::emit_signal()
@@ -48,23 +29,20 @@ void Controller::emit_signal()
 
 void Controller::cancel()
 {
-    lock_t lck(m_);
     emit_signal();
-    cancel_ = true;
+    cancel_.store(true);
 }
 
 void Controller::wait()
 {
     lock_t lck(m_);
 
-    while (work_)
+    while (count_process_.load()>0)
     {
         cv_.wait(lck, [this]() -> bool
         {
-            return !work_ && 0 == count_process_;
+            return 0 == count_process_.load();
         });
-        if (!work_ && 0 == count_process_)
-            break;
     }
 
 }

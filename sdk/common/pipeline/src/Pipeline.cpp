@@ -11,13 +11,11 @@ Pipeline::Pipeline() :
     controller_(Controller::create()),
     lg_("sdk", "pipeline")
 {
-    controller_->start_work();
     lg_.info("create");
 }
 
 Pipeline::~Pipeline()
 {
-    controller_->end_work();
     lg_.info("wait running job");
     controller_->wait();
     lg_.info("destroy");

@@ -17,3 +17,6 @@ include_directories(sdk)
 
 add_subdirectory(sdk)
 add_subdirectory(app)
+
+enable_testing()
+add_subdirectory(tests)

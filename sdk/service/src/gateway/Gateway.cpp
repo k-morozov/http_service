@@ -70,7 +70,9 @@ void Gateway::run()
     }
 }
 
-void Gateway::stop() {
+void Gateway::stop()
+{
+    acceptor_->cancel();
 }
 
 
